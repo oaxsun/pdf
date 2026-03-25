@@ -1,11 +1,15 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: './',
-  worker: {
-    format: 'es'
-  },
+  base: '/pdf/',
+
   build: {
-    target: 'esnext'
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+
+  server: {
+    port: 5173,
+    open: true,
   }
-});
+})
