@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compresso - Comprimir PDF Online Gratis | Reducir Tamaño PDF</title>
 
-  <meta name="description" content="Compresso es una herramienta gratuita para comprimir PDF online. Reduce el tamaño de tus archivos PDF de forma rápida y segura desde tu navegador." />
+  <meta name="description" content="Compresso es una herramienta gratuita para comprimir PDF online sin perder calidad. Reduce el tamaño de tus archivos PDF de forma rápida y segura desde tu navegador." />
   <meta name="keywords" content="comprimir pdf, reducir pdf, compresor pdf online, optimizar pdf, reducir tamaño pdf gratis, compress pdf online, pdf compressor" />
   <meta name="author" content="Compresso" />
   <meta name="robots" content="index, follow" />
@@ -14,7 +14,7 @@
   <link rel="canonical" href="https://compresso.oaxsun.tech/" />
 
   <meta property="og:title" content="Compresso - Comprimir PDF Online Gratis" />
-  <meta property="og:description" content="Reduce el tamaño de tus PDFs. Rápido, gratis y sin subir archivos a servidores." />
+  <meta property="og:description" content="Reduce el tamaño de tus PDFs sin perder calidad. Rápido, gratis y sin subir archivos a servidores." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://compresso.oaxsun.tech/" />
   <meta property="og:image" content="https://compresso.oaxsun.tech/preview.png" />
@@ -26,73 +26,71 @@
 
   <style>
     :root {
-      --bg: #07101c;
-      --panel: rgba(10, 16, 28, 0.82);
-      --panel-2: rgba(255, 255, 255, 0.04);
-      --panel-3: rgba(255, 255, 255, 0.03);
+      --bg: #08111f;
+      --panel: rgba(15, 23, 42, 0.92);
+      --panel-2: #111827;
       --border: rgba(255,255,255,.08);
-      --border-soft: rgba(255,255,255,.06);
       --text: #e5e7eb;
       --muted: #94a3b8;
       --accent: #14b8a6;
-      --accent-2: #0f9f92;
-      --accent-3: #2dd4bf;
+      --accent-2: #0d9488;
+      --warning: #f59e0b;
+      --error: #ef4444;
       --gold: #fbbf24;
-      --shadow: 0 20px 60px rgba(0, 0, 0, .35);
     }
 
     * { box-sizing: border-box; }
 
     html, body {
-      margin: 0;
-      min-height: 100%;
-      background:
-        radial-gradient(circle at top left, rgba(20,184,166,.12), transparent 25%),
-        radial-gradient(circle at top right, rgba(45,212,191,.08), transparent 22%),
-        linear-gradient(180deg, #0b1220 0%, #050b14 100%);
-      color: var(--text);
-      overflow-x: hidden;
+      background: var(--bg);
+      overflow: hidden;
+      height: 100%;
     }
 
     body {
+      margin: 0;
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      padding: 0;
-    }
-
-    a, button, input, select {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .app-shell {
-      width: 100%;
+      background: radial-gradient(circle at top, #0f172a 0%, #020617 65%);
+      color: var(--text);
       min-height: 100vh;
-      background: transparent;
-      overflow-x: hidden;
+      padding: 24px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 980px;
+      height: calc(100vh - 48px);
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: 0 30px 100px rgba(0,0,0,.35);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      display: grid;
+      grid-template-rows: auto 1fr;
     }
 
     .navbar {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      display: flex;
       align-items: center;
-      gap: 24px;
-      width: 100%;
-      min-height: 86px;
-      padding: 0 32px;
-      border-bottom: 1px solid var(--border-soft);
-      background: rgba(10, 16, 28, 0.82);
-      backdrop-filter: blur(16px);
-      position: sticky;
-      top: 0;
-      z-index: 30;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.02);
+      flex-shrink: 0;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       color: var(--text);
       text-decoration: none;
-      min-width: 0;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
     }
 
     .brand-dot {
@@ -100,210 +98,122 @@
       height: 10px;
       border-radius: 999px;
       background: var(--accent);
-      box-shadow: 0 0 18px rgba(20,184,166,.6);
-      flex: 0 0 auto;
-      margin-top: 2px;
+      box-shadow: 0 0 16px rgba(20,184,166,.55);
     }
 
-    .brand-meta {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .brand-top {
+    .nav-links {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      line-height: 1.1;
     }
 
-    .brand-name {
-      font-size: 18px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .brand-version {
+    .nav-link {
       color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      padding: 5px 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--border-soft);
-    }
-
-    .brand-subtitle {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.3;
-      white-space: nowrap;
-    }
-
-    .nav-main {
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      gap: 28px;
-      height: 100%;
-      min-width: 0;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .nav-main::-webkit-scrollbar {
-      display: none;
-    }
-
-    .nav-tab {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 86px;
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 700;
-      white-space: nowrap;
+      transition: .2s ease;
+      border: 1px solid transparent;
       cursor: pointer;
-      transition: color .2s ease;
-      flex: 0 0 auto;
+      user-select: none;
     }
 
-    .nav-tab:hover,
-    .nav-tab.active {
+    .nav-link:hover,
+    .nav-link.active {
       color: var(--text);
+      background: rgba(255,255,255,.05);
+      border-color: var(--border);
     }
 
-    .nav-tab::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -1px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-3));
-      border-radius: 999px 999px 0 0;
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform .22s ease;
-    }
-
-    .nav-tab.active::after {
-      transform: scaleX(1);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 12px;
-      white-space: nowrap;
-    }
-
-    .nav-login-link {
-      color: var(--text);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 700;
-      opacity: .9;
-      transition: color .2s ease, opacity .2s ease;
-    }
-
-    .nav-login-link:hover {
-      color: var(--accent-3);
-      opacity: 1;
-    }
-
-    .nav-signup-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 11px 16px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+    .nav-login {
+      background: var(--accent);
       color: #042f2e;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 800;
-      transition: transform .15s ease, filter .2s ease;
     }
 
-    .nav-signup-btn:hover {
-      filter: brightness(1.04);
-      transform: translateY(-1px);
+    .nav-login:hover {
+      background: var(--accent-2);
+      color: #042f2e;
     }
 
     .viewport {
       position: relative;
-      width: 100%;
       overflow: hidden;
-      padding: 28px 20px 36px;
-      touch-action: pan-y pinch-zoom;
+      height: 100%;
+      width: 100%;
     }
 
     .track {
       display: flex;
+      height: 100%;
       width: 100%;
       transition: transform .45s cubic-bezier(.22,.61,.36,1);
       will-change: transform;
     }
 
     .page {
-      flex: 0 0 100%;
       min-width: 100%;
       width: 100%;
-      padding: 18px 28px 40px;
-      display: flex;
-      justify-content: center;
+      height: 100%;
+      flex: 0 0 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 28px;
     }
 
-    .page-inner {
-      width: 100%;
-      max-width: 760px;
+    .page::-webkit-scrollbar {
+      width: 10px;
     }
 
-    .page-wide {
-      width: 100%;
-      max-width: 920px;
+    .page::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.10);
+      border-radius: 999px;
     }
 
     .header {
       padding-bottom: 18px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--border-soft);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
     }
 
     .title {
       margin: 0;
-      font-size: 38px;
-      line-height: 1.02;
-      letter-spacing: -0.03em;
-      font-weight: 900;
+      font-size: 30px;
+      line-height: 1.08;
+    }
+
+    .version {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
 
     .seo-subtitle {
-      margin: 8px 0 0;
-      color: #cbd5e1;
-      font-size: 16px;
-      line-height: 1.45;
-      font-weight: 700;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      font-weight: 500;
     }
 
     .subtitle {
-      margin: 12px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
-      line-height: 1.75;
+      line-height: 1.6;
       font-size: 15px;
-      max-width: 620px;
+      max-width: 720px;
     }
 
     .content {
@@ -313,126 +223,56 @@
 
     .panel {
       background: var(--panel-2);
-      border: 1px solid var(--border-soft);
-      border-radius: 24px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
       padding: 18px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .trust-panel {
+      background: linear-gradient(135deg, rgba(20,184,166,.12), rgba(20,184,166,.04));
+      border-color: rgba(20,184,166,.22);
     }
 
     .dropzone {
-      border: 1.5px dashed rgba(148,163,184,.34);
-      border-radius: 28px;
-      padding: 52px 24px;
+      border: 2px dashed rgba(148,163,184,.35);
+      border-radius: 22px;
+      padding: 40px 20px;
       text-align: center;
-      background:
-        radial-gradient(circle at top, rgba(20,184,166,.06), transparent 60%),
-        rgba(255,255,255,.025);
-      transition: .22s ease;
+      background: rgba(255,255,255,.02);
+      transition: .2s ease;
       cursor: pointer;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
-    }
-
-    .dropzone:hover {
-      border-color: rgba(45,212,191,.45);
-      background:
-        radial-gradient(circle at top, rgba(20,184,166,.10), transparent 60%),
-        rgba(255,255,255,.03);
-      transform: translateY(-1px);
     }
 
     .dropzone.dragover {
-      border-color: var(--accent-3);
-      background:
-        radial-gradient(circle at top, rgba(20,184,166,.14), transparent 60%),
-        rgba(20,184,166,.06);
+      border-color: var(--accent);
+      background: rgba(20,184,166,.08);
       transform: scale(1.01);
-    }
-
-    .dropzone-icon {
-      width: 58px;
-      height: 58px;
-      margin: 0 auto 16px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      background: rgba(20,184,166,.12);
-      color: #99f6e4;
-      font-size: 24px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
     }
 
     .dropzone h2 {
       margin: 0 0 10px;
-      font-size: 28px;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+      font-size: 24px;
     }
 
     .dropzone p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.65;
-      font-size: 15px;
-      max-width: 520px;
-      margin-inline: auto;
+      line-height: 1.6;
     }
 
     input[type="file"] { display: none; }
 
-    .trust-panel {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 18px;
-      background: linear-gradient(135deg, rgba(20,184,166,.10), rgba(20,184,166,.04));
-      border: 1px solid rgba(20,184,166,.18);
-      border-radius: 24px;
-    }
-
-    .trust-icon {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      background: rgba(20,184,166,.16);
-      color: #99f6e4;
-      font-size: 16px;
-    }
-
     .row {
       display: flex;
       justify-content: space-between;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
       flex-wrap: wrap;
     }
 
-    .file-chip {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      min-width: 0;
-    }
-
-    .file-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: rgba(20,184,166,.12);
-      color: #99f6e4;
-      display: grid;
-      place-items: center;
-      flex: 0 0 auto;
-      font-size: 18px;
-    }
-
     .file-name {
-      font-weight: 800;
+      font-weight: 700;
       word-break: break-word;
-      line-height: 1.4;
-      margin-bottom: 4px;
     }
 
     .muted {
@@ -442,51 +282,31 @@
     .stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+      gap: 12px;
     }
 
     .stat {
-      padding: 16px;
-      background: var(--panel-3);
-      border: 1px solid var(--border-soft);
-      border-radius: 20px;
-      min-height: 96px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      padding: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
     }
 
     .stat .label {
       color: var(--muted);
       font-size: 13px;
-      margin-bottom: 10px;
-      line-height: 1.3;
+      margin-bottom: 8px;
     }
 
     .stat .value {
-      font-size: 24px;
-      font-weight: 900;
-      line-height: 1.05;
-      letter-spacing: -0.02em;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.1;
     }
 
     .controls {
       display: grid;
-      gap: 16px;
-    }
-
-    .section-block-title {
-      margin: 0 0 2px;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-
-    .section-block-subtitle {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
+      gap: 14px;
     }
 
     .field {
@@ -495,23 +315,13 @@
     }
 
     .field label {
-      color: var(--text);
+      color: var(--muted);
       font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
     }
 
     .label-pro {
-      color: var(--accent-3);
-      font-weight: 800;
-      font-size: 12px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      background: rgba(20,184,166,.10);
-      border: 1px solid rgba(20,184,166,.16);
+      color: var(--accent);
+      font-weight: 700;
     }
 
     .select, .range, .btn {
@@ -520,19 +330,11 @@
     }
 
     .select {
-      appearance: none;
       background: #09111f;
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 14px 16px;
-      outline: none;
-      transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .select:focus {
-      border-color: rgba(45,212,191,.45);
-      box-shadow: 0 0 0 4px rgba(20,184,166,.10);
     }
 
     .select:disabled {
@@ -550,9 +352,9 @@
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
-      color: var(--accent-3);
+      color: var(--accent);
       background: rgba(20,184,166,.12);
       border: 1px solid rgba(20,184,166,.18);
       padding: 6px 10px;
@@ -567,15 +369,9 @@
       align-items: center;
       background: #09111f;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 12px 14px;
       position: relative;
-      transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .range-wrap:focus-within {
-      border-color: rgba(45,212,191,.45);
-      box-shadow: 0 0 0 4px rgba(20,184,166,.10);
     }
 
     .range-wrap.locked {
@@ -589,9 +385,9 @@
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
-      color: var(--accent-3);
+      color: var(--accent);
       background: rgba(20,184,166,.12);
       border: 1px solid rgba(20,184,166,.18);
       padding: 6px 10px;
@@ -603,11 +399,6 @@
       visibility: hidden;
     }
 
-    .range {
-      accent-color: var(--accent);
-      background: transparent;
-    }
-
     .range:disabled {
       cursor: not-allowed;
     }
@@ -615,62 +406,42 @@
     .range-value {
       min-width: 72px;
       text-align: right;
-      font-weight: 800;
-      color: #d1fae5;
+      font-weight: 700;
     }
 
     .hint {
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .pro-hint {
-      color: #99f6e4;
+      color: var(--accent);
       font-weight: 600;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(20,184,166,.08);
-      border: 1px solid rgba(20,184,166,.14);
-    }
-
-    .action-stack {
-      display: grid;
-      gap: 12px;
-      margin-top: 6px;
     }
 
     .btn {
       border: 0;
-      border-radius: 16px;
-      padding: 15px 16px;
+      border-radius: 14px;
+      padding: 14px 16px;
       font-weight: 800;
       cursor: pointer;
-      transition: transform .15s ease, filter .2s ease, opacity .2s ease;
+      transition: .2s ease;
       text-align: center;
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
+      display: inline-block;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      background: var(--accent);
       color: #042f2e;
-      font-size: 15px;
-      box-shadow: 0 12px 30px rgba(20,184,166,.18);
     }
 
-    .btn-primary:hover { filter: brightness(1.03); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-primary:hover { background: var(--accent-2); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 
     .btn-secondary {
-      background: #0a1322;
+      background: #09111f;
       color: var(--text);
       border: 1px solid var(--border);
     }
@@ -678,10 +449,6 @@
     .progress-wrap {
       display: none;
       gap: 10px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid var(--border-soft);
     }
 
     .progress {
@@ -695,16 +462,14 @@
     .progress-bar {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      background: linear-gradient(90deg, #14b8a6, #2dd4bf);
       transition: width .15s ease;
     }
 
     .message {
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.5;
       color: var(--muted);
-      min-height: 22px;
-      padding: 2px 2px 0;
     }
 
     .message.error { color: #fca5a5; }
@@ -715,42 +480,39 @@
     .pro-lead {
       margin: 0;
       color: var(--muted);
-      line-height: 1.8;
+      line-height: 1.7;
       font-size: 15px;
       max-width: 760px;
     }
 
     .faq-list {
       display: grid;
-      gap: 14px;
-      margin-top: 24px;
+      gap: 12px;
+      margin-top: 22px;
     }
 
     .faq-item {
-      border: 1px solid var(--border-soft);
-      border-radius: 22px;
-      background: rgba(255,255,255,.03);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255,255,255,.02);
       padding: 20px;
     }
 
     .faq-item h3 {
       margin: 0 0 8px;
       font-size: 16px;
-      letter-spacing: -0.01em;
     }
 
     .faq-item p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.75;
+      line-height: 1.7;
     }
 
     .pro-page {
       background:
-        radial-gradient(circle at top right, rgba(251,191,36,.12), transparent 34%),
-        radial-gradient(circle at bottom left, rgba(20,184,166,.12), transparent 30%);
-      border-radius: 28px;
-      padding: 8px 0;
+        radial-gradient(circle at top right, rgba(251,191,36,.14), transparent 35%),
+        radial-gradient(circle at bottom left, rgba(20,184,166,.14), transparent 32%);
     }
 
     .pro-badge {
@@ -768,9 +530,8 @@
     }
 
     .pro-title {
-      font-size: 40px;
+      font-size: 38px;
       line-height: 1.03;
-      letter-spacing: -0.03em;
       margin: 0 0 12px;
       max-width: 720px;
     }
@@ -784,7 +545,7 @@
 
     .pro-card {
       border: 1px solid rgba(255,255,255,.09);
-      border-radius: 24px;
+      border-radius: 22px;
       padding: 22px;
       background: rgba(255,255,255,.04);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
@@ -798,7 +559,7 @@
     .pro-card p {
       margin: 0;
       color: #cbd5e1;
-      line-height: 1.7;
+      line-height: 1.65;
       font-size: 14px;
     }
 
@@ -833,7 +594,7 @@
     .pro-list div {
       color: #dbe7f3;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.55;
       padding-left: 18px;
       position: relative;
     }
@@ -856,7 +617,7 @@
     .price-sub {
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.6;
     }
 
     .pro-cta {
@@ -878,431 +639,254 @@
 
     .page h2.section-title {
       margin: 0 0 14px;
-      font-size: 34px;
-      line-height: 1.05;
-      letter-spacing: -0.03em;
+      font-size: 30px;
+      line-height: 1.1;
     }
 
-    @media (max-width: 980px) {
+    @media (max-width: 900px) {
+      .stats,
       .pro-grid,
       .pro-highlight {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 820px) {
+      body {
+        padding: 14px;
+      }
+
+      .shell {
+        height: calc(100vh - 28px);
+      }
+
       .navbar {
-        grid-template-columns: 1fr auto;
-        grid-template-areas:
-          "brand actions"
-          "tabs tabs";
-        gap: 14px 12px;
-        padding: 14px 16px 0;
-        min-height: auto;
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .brand {
-        grid-area: brand;
-        min-width: 0;
-      }
-
-      .nav-actions {
-        grid-area: actions;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-
-      .nav-main {
-        grid-area: tabs;
-        justify-content: flex-start;
-        gap: 10px;
+      .nav-links {
         width: 100%;
-        padding: 0 0 10px;
-        border-top: 1px solid rgba(255,255,255,.04);
-        margin-top: 2px;
-      }
-
-      .nav-tab {
-        height: 46px;
-        padding: 0 16px;
-        border-radius: 14px;
-        background: rgba(255,255,255,.03);
-        border: 1px solid rgba(255,255,255,.05);
-      }
-
-      .nav-tab::after {
-        display: none;
-      }
-
-      .nav-tab.active {
-        background: rgba(20,184,166,.12);
-        border-color: rgba(20,184,166,.24);
-        color: #ccfbf1;
-        box-shadow: inset 0 0 0 1px rgba(20,184,166,.08);
-      }
-
-      .brand-subtitle {
-        white-space: normal;
-      }
-
-      .brand-name {
-        font-size: 17px;
-      }
-
-      .brand-version {
-        font-size: 11px;
-        padding: 4px 7px;
-      }
-
-      .nav-login-link {
-        font-size: 13px;
-      }
-
-      .nav-signup-btn {
-        font-size: 13px;
-        padding: 10px 14px;
-        border-radius: 12px;
-      }
-
-      .viewport {
-        padding: 16px 12px 24px;
       }
 
       .page {
-        padding: 10px 2px 24px;
-      }
-
-      .page-inner,
-      .page-wide {
-        max-width: 100%;
-      }
-
-      .title {
-        font-size: 31px;
-      }
-
-      .seo-subtitle {
-        font-size: 15px;
+        padding: 20px;
       }
 
       .pro-title {
-        font-size: 30px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr;
-      }
-
-      .row {
-        align-items: flex-start;
-      }
-
-      .dropzone {
-        padding: 34px 16px;
-      }
-
-      .dropzone h2 {
-        font-size: 24px;
-      }
-
-      .panel,
-      .faq-item,
-      .pro-card,
-      .pro-box,
-      .price-box {
-        border-radius: 20px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .navbar {
-        grid-template-columns: 1fr;
-        grid-template-areas:
-          "brand"
-          "actions"
-          "tabs";
-        padding: 12px 12px 0;
-      }
-
-      .nav-actions {
-        justify-content: flex-start;
-      }
-
-      .nav-main {
-        padding-bottom: 12px;
-      }
-
-      .nav-tab {
-        font-size: 13px;
-        padding: 0 14px;
-      }
-
-      .viewport {
-        padding: 14px 10px 20px;
-      }
-
-      .page {
-        padding: 8px 0 20px;
-      }
-
-      .title {
-        font-size: 28px;
-      }
-
-      .subtitle,
-      .faq-intro,
-      .pro-lead {
-        font-size: 14px;
-      }
-
-      .dropzone {
-        border-radius: 22px;
-      }
-
-      .dropzone h2 {
-        font-size: 22px;
-      }
-
-      .trust-panel {
-        align-items: flex-start;
+        font-size: 31px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="shell">
     <nav class="navbar">
       <a href="#" class="brand" id="brandHome">
         <span class="brand-dot"></span>
-        <div class="brand-meta">
-          <div class="brand-top">
-            <span class="brand-name">Compresso</span>
-            <span class="brand-version">V2.6</span>
-          </div>
-          <div class="brand-subtitle">Compresor PDF online gratis</div>
-        </div>
+        <span>Compresso</span>
       </a>
 
-      <div class="nav-main" id="navMain">
-        <a class="nav-tab active" data-tab="0">Inicio</a>
-        <a class="nav-tab" data-tab="1">Funciones PRO</a>
-        <a class="nav-tab" data-tab="2">FAQs</a>
-      </div>
-
-      <div class="nav-actions">
-        <a href="/login" class="nav-login-link">Login</a>
-        <a href="/signup" class="nav-signup-btn">Sign up</a>
+      <div class="nav-links">
+        <a class="nav-link active" data-tab="0">Inicio</a>
+        <a class="nav-link" data-tab="1">FAQs</a>
+        <a class="nav-link" data-tab="2">Pro</a>
+        <a href="/login" class="nav-link nav-login">Login</a>
       </div>
     </nav>
 
-    <div class="viewport" id="viewport">
+    <div class="viewport">
       <div class="track" id="track">
         <section class="page">
-          <div class="page-inner">
-            <div class="header">
-              <h1 class="title">Comprime tu PDF en segundos</h1>
-              <h2 class="seo-subtitle">Rápido, gratis y sin subir archivos a servidores</h2>
-              <p class="subtitle">
-                Reduce el tamaño de tus PDFs directamente en tu navegador. En la versión gratis puedes comprimir 1 archivo de hasta 400 MB.
-              </p>
+          <div class="header">
+            <div class="title-row">
+              <h1 class="title">Compresso</h1>
+              <span class="version">V2.5</span>
+            </div>
+            <h2 class="seo-subtitle">Comprimir PDF online gratis</h2>
+            <p class="subtitle">
+              Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores.
+              En la versión gratis puedes comprimir 1 archivo de hasta 400 MB.
+            </p>
+          </div>
+
+          <div class="content">
+            <div class="panel trust-panel">
+              <div class="muted" style="color:#99f6e4;">
+                🔒 Tus archivos no se suben a servidores. Todo se procesa localmente en tu navegador.
+              </div>
             </div>
 
-            <div class="content">
-              <label class="dropzone" id="dropzone" for="fileInput">
-                <div class="dropzone-icon">📄</div>
-                <h2>Sube tu PDF</h2>
-                <p>Haz clic aquí o arrastra un archivo PDF. Límite gratis: hasta 400 MB por archivo.</p>
-              </label>
-              <input id="fileInput" type="file" accept="application/pdf" />
+            <label class="dropzone" id="dropzone" for="fileInput">
+              <h2>Sube tu PDF</h2>
+              <p>Haz clic aquí o arrastra un archivo PDF. Límite gratis: hasta 400 MB por archivo.</p>
+            </label>
+            <input id="fileInput" type="file" accept="application/pdf" />
 
-              <div class="panel" id="filePanel" style="display:none;">
-                <div class="row">
-                  <div class="file-chip">
-                    <div class="file-icon">📎</div>
-                    <div>
-                      <div class="file-name" id="fileName">-</div>
-                      <div class="muted" id="fileMeta">-</div>
-                    </div>
-                  </div>
-                  <button class="btn btn-secondary" id="clearBtn" type="button">Quitar archivo</button>
-                </div>
-              </div>
-
-              <div class="trust-panel">
-                <div class="trust-icon">🔒</div>
-                <div class="muted" style="color:#ccfbf1; line-height:1.65;">
-                  Tus archivos están seguros. Todo se procesa localmente en tu navegador y no se suben a ningún servidor.
-                </div>
-              </div>
-
-              <div class="stats">
-                <div class="stat">
-                  <div class="label">Tamaño original</div>
-                  <div class="value" id="originalSize">-</div>
-                </div>
-                <div class="stat">
-                  <div class="label">Tamaño final</div>
-                  <div class="value" id="finalSize">-</div>
-                </div>
-                <div class="stat">
-                  <div class="label">Reducción</div>
-                  <div class="value" id="savedPercent">-</div>
-                </div>
-              </div>
-
-              <div class="panel controls">
+            <div class="panel" id="filePanel" style="display:none;">
+              <div class="row">
                 <div>
-                  <h3 class="section-block-title">Ajustes de compresión para usuarios PRO</h3>
-                  <p class="section-block-subtitle">
-                    La versión gratis usa automáticamente la configuración recomendada. Los controles avanzados están disponibles en Pro.
-                  </p>
+                  <div class="file-name" id="fileName">-</div>
+                  <div class="muted" id="fileMeta">-</div>
                 </div>
-
-                <div class="field">
-                  <label for="preset">
-                    Preset
-                    <span class="label-pro">Pro</span>
-                  </label>
-                  <div class="select-lock" id="presetWrap">
-                    <select id="preset" class="select">
-                      <option value="light">Ligero</option>
-                      <option value="optimal" selected>Óptimo</option>
-                      <option value="extreme">Extremo</option>
-                    </select>
-                  </div>
-                  <div class="hint">En la versión gratis se usa automáticamente el ajuste recomendado: 1.5x y 90%.</div>
-                </div>
-
-                <div class="field">
-                  <label for="scaleRange">
-                    Resolución de render
-                    <span class="label-pro">Pro</span>
-                  </label>
-                  <div class="range-wrap locked" id="scaleWrap">
-                    <input id="scaleRange" class="range" type="range" min="0.6" max="2" step="0.1" value="1.5" />
-                    <div class="range-value" id="scaleValue">1.5x</div>
-                  </div>
-                  <div class="hint">Más alto = mejor calidad, más peso.</div>
-                </div>
-
-                <div class="field">
-                  <label for="qualityRange">
-                    Calidad JPEG
-                    <span class="label-pro">Pro</span>
-                  </label>
-                  <div class="range-wrap locked" id="qualityWrap">
-                    <input id="qualityRange" class="range" type="range" min="0.35" max="0.95" step="0.05" value="0.9" />
-                    <div class="range-value" id="qualityValue">90%</div>
-                  </div>
-                  <div class="hint">Más alto = mejor calidad visual, menos compresión.</div>
-                </div>
-
-                <div class="hint pro-hint">
-                  🔒 El control avanzado está disponible solo para usuarios Pro
-                </div>
-
-                <div class="hint">
-                  Este compresor convierte las páginas del PDF en imágenes para reducir su tamaño. Ideal para PDFs escaneados o con muchas imágenes.
-                </div>
-
-                <div class="action-stack">
-                  <button class="btn btn-primary" id="compressBtn" type="button" disabled>Comprimir PDF</button>
-                  <a id="downloadBtn" class="btn btn-secondary" style="display:none;" download="pdf-comprimido.pdf">Descargar PDF comprimido</a>
-                </div>
+                <button class="btn btn-secondary" id="clearBtn" type="button">Quitar archivo</button>
               </div>
-
-              <div class="progress-wrap" id="progressWrap">
-                <div class="message" id="progressText">Preparando...</div>
-                <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-              </div>
-
-              <div class="message" id="message"></div>
             </div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Tamaño original</div>
+                <div class="value" id="originalSize">-</div>
+              </div>
+              <div class="stat">
+                <div class="label">Tamaño final</div>
+                <div class="value" id="finalSize">-</div>
+              </div>
+              <div class="stat">
+                <div class="label">Reducción</div>
+                <div class="value" id="savedPercent">-</div>
+              </div>
+            </div>
+
+            <div class="panel controls">
+              <div class="field">
+                <label for="preset">
+                  Preset
+                  <span class="label-pro">(Pro)</span>
+                </label>
+                <div class="select-lock" id="presetWrap">
+                  <select id="preset" class="select">
+                    <option value="light">Ligero</option>
+                    <option value="optimal" selected>Óptimo</option>
+                    <option value="extreme">Extremo</option>
+                  </select>
+                </div>
+                <div class="hint">En la versión gratis se usa automáticamente el ajuste recomendado: 1.5x y 90%.</div>
+              </div>
+
+              <div class="field">
+                <label for="scaleRange">
+                  Resolución de render
+                  <span class="label-pro">(Pro)</span>
+                </label>
+                <div class="range-wrap locked" id="scaleWrap">
+                  <input id="scaleRange" class="range" type="range" min="0.6" max="2" step="0.1" value="1.5" />
+                  <div class="range-value" id="scaleValue">1.5x</div>
+                </div>
+                <div class="hint">Más alto = mejor calidad, más peso.</div>
+              </div>
+
+              <div class="field">
+                <label for="qualityRange">
+                  Calidad JPEG
+                  <span class="label-pro">(Pro)</span>
+                </label>
+                <div class="range-wrap locked" id="qualityWrap">
+                  <input id="qualityRange" class="range" type="range" min="0.35" max="0.95" step="0.05" value="0.9" />
+                  <div class="range-value" id="qualityValue">90%</div>
+                </div>
+                <div class="hint">Más alto = mejor calidad visual, menos compresión.</div>
+              </div>
+
+              <div class="hint pro-hint">
+                🔒 El control avanzado está disponible solo para usuarios Pro
+              </div>
+
+              <div class="hint">
+                Este compresor convierte las páginas del PDF en imágenes para reducir su tamaño. Ideal para PDFs escaneados o con muchas imágenes.
+              </div>
+
+              <button class="btn btn-primary" id="compressBtn" type="button" disabled>Comprimir PDF</button>
+              <a id="downloadBtn" class="btn btn-secondary" style="display:none;" download="pdf-comprimido.pdf">Descargar PDF comprimido</a>
+            </div>
+
+            <div class="progress-wrap" id="progressWrap">
+              <div class="message" id="progressText">Preparando...</div>
+              <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            </div>
+
+            <div class="message" id="message"></div>
           </div>
         </section>
 
         <section class="page">
-          <div class="page-wide pro-page">
-            <div class="pro-badge">⭐ Compresso Pro</div>
-            <h2 class="pro-title">Desbloquea el modo avanzado y comprime sin límites</h2>
-            <p class="pro-lead">
-              Si trabajas con PDFs pesados, muchos archivos o necesitas mayor control sobre la compresión,
-              Compresso Pro está diseñado para ti.
-            </p>
+          <h2 class="section-title">Preguntas frecuentes</h2>
+          <p class="faq-intro">
+            Todo lo importante sobre cómo funciona Compresso, qué incluye la versión gratis y qué desbloquea Pro.
+          </p>
 
-            <div class="pro-grid">
-              <div class="pro-card">
-                <h3>Control avanzado</h3>
-                <p>Ajusta preset, resolución y calidad manualmente para encontrar el equilibrio ideal entre peso y nitidez.</p>
-              </div>
-
-              <div class="pro-card">
-                <h3>Varios archivos a la vez</h3>
-                <p>Ahorra tiempo comprimiendo múltiples PDFs en una sola sesión, sin repetir el proceso uno por uno.</p>
-              </div>
-
-              <div class="pro-card">
-                <h3>Sin límite de tamaño</h3>
-                <p>Olvídate del tope de 400 MB y procesa archivos grandes cuando realmente lo necesites.</p>
-              </div>
+          <div class="faq-list">
+            <div class="faq-item">
+              <h3>¿Mis archivos se suben a un servidor?</h3>
+              <p>No. Todo el procesamiento ocurre localmente en tu navegador.</p>
             </div>
 
-            <div class="pro-highlight">
-              <div class="pro-box">
-                <h3>¿Por qué elegir Pro?</h3>
-                <div class="pro-list">
-                  <div>Desbloqueas todo el panel de ajustes avanzados.</div>
-                  <div>Puedes comprimir varios archivos al mismo tiempo.</div>
-                  <div>Procesas PDFs sin límite de tamaño.</div>
-                  <div>Ideal para oficinas, estudiantes, despachos y usuarios intensivos.</div>
-                </div>
-              </div>
+            <div class="faq-item">
+              <h3>¿Cuál es el límite de tamaño en la versión gratis?</h3>
+              <p>Puedes comprimir un archivo PDF de hasta 400 MB por vez en la versión gratuita.</p>
+            </div>
 
-              <div class="price-box">
-                <h3>Sube de nivel</h3>
-                <div class="price-tag">Pro</div>
-                <div class="price-sub">
-                  Más control, más capacidad y una experiencia pensada para usuarios que trabajan en serio con PDFs.
-                </div>
-                <div class="pro-cta">
-                  <a href="/signup" class="btn btn-gold">Hazte Pro</a>
-                </div>
-              </div>
+            <div class="faq-item">
+              <h3>¿Qué desbloquea la versión Pro?</h3>
+              <p>Compresso Pro desbloquea presets, control manual de resolución y calidad, compresión de varios archivos y sin límite de tamaño.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Se mantiene el texto seleccionable?</h3>
+              <p>No siempre. Esta versión convierte las páginas a imagen para comprimir, por eso funciona mejor con PDFs visuales o escaneados.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Por qué a veces el PDF no reduce tanto?</h3>
+              <p>Algunos PDFs ya vienen optimizados o tienen poco contenido visual para comprimir. En esos casos la reducción puede ser menor.</p>
             </div>
           </div>
         </section>
 
-        <section class="page">
-          <div class="page-inner">
-            <h2 class="section-title">Preguntas frecuentes</h2>
-            <p class="faq-intro">
-              Todo lo importante sobre cómo funciona Compresso, qué incluye la versión gratis y qué desbloquea Pro.
-            </p>
+        <section class="page pro-page">
+          <div class="pro-badge">⭐ Compresso Pro</div>
+          <h2 class="pro-title">Desbloquea el modo avanzado y comprime sin límites</h2>
+          <p class="pro-lead">
+            Si trabajas con PDFs pesados, muchos archivos o necesitas mayor control sobre la compresión,
+            Compresso Pro está diseñado para ti.
+          </p>
 
-            <div class="faq-list">
-              <div class="faq-item">
-                <h3>¿Mis archivos se suben a un servidor?</h3>
-                <p>No. Todo el procesamiento ocurre localmente en tu navegador.</p>
+          <div class="pro-grid">
+            <div class="pro-card">
+              <h3>Control avanzado</h3>
+              <p>Ajusta preset, resolución y calidad manualmente para encontrar el equilibrio ideal entre peso y nitidez.</p>
+            </div>
+
+            <div class="pro-card">
+              <h3>Varios archivos a la vez</h3>
+              <p>Ahorra tiempo comprimiendo múltiples PDFs en una sola sesión, sin repetir el proceso uno por uno.</p>
+            </div>
+
+            <div class="pro-card">
+              <h3>Sin límite de tamaño</h3>
+              <p>Olvídate del tope de 400 MB y procesa archivos grandes cuando realmente lo necesites.</p>
+            </div>
+          </div>
+
+          <div class="pro-highlight">
+            <div class="pro-box">
+              <h3>¿Por qué elegir Pro?</h3>
+              <div class="pro-list">
+                <div>Desbloqueas todo el panel de ajustes avanzados.</div>
+                <div>Puedes comprimir varios archivos al mismo tiempo.</div>
+                <div>Procesas PDFs sin límite de tamaño.</div>
+                <div>Ideal para oficinas, estudiantes, despachos y usuarios intensivos.</div>
               </div>
+            </div>
 
-              <div class="faq-item">
-                <h3>¿Cuál es el límite de tamaño en la versión gratis?</h3>
-                <p>Puedes comprimir un archivo PDF de hasta 400 MB por vez en la versión gratuita.</p>
+            <div class="price-box">
+              <h3>Sube de nivel</h3>
+              <div class="price-tag">Pro</div>
+              <div class="price-sub">
+                Más control, más capacidad y una experiencia pensada para usuarios que trabajan en serio con PDFs.
               </div>
-
-              <div class="faq-item">
-                <h3>¿Qué desbloquea la versión Pro?</h3>
-                <p>Compresso Pro desbloquea presets, control manual de resolución y calidad, compresión de varios archivos y sin límite de tamaño.</p>
-              </div>
-
-              <div class="faq-item">
-                <h3>¿Se mantiene el texto seleccionable?</h3>
-                <p>No siempre. Esta versión convierte las páginas a imagen para comprimir, por eso funciona mejor con PDFs visuales o escaneados.</p>
-              </div>
-
-              <div class="faq-item">
-                <h3>¿Por qué a veces el PDF no reduce tanto?</h3>
-                <p>Algunos PDFs ya vienen optimizados o tienen poco contenido visual para comprimir. En esos casos la reducción puede ser menor.</p>
+              <div class="pro-cta">
+                <a href="/login" class="btn btn-gold">Hazte Pro</a>
               </div>
             </div>
           </div>
@@ -1344,39 +928,20 @@
     const qualityWrap = document.getElementById('qualityWrap');
 
     const track = document.getElementById('track');
-    const tabLinks = document.querySelectorAll('.nav-tab[data-tab]');
+    const tabLinks = document.querySelectorAll('.nav-link[data-tab]');
     const brandHome = document.getElementById('brandHome');
-    const navMain = document.getElementById('navMain');
-    const viewport = document.getElementById('viewport');
 
     let selectedFile = null;
     let outputUrl = null;
     let isProUser = false;
     let currentTab = 0;
 
-    function centerActiveTab(index) {
-      const activeLink = [...tabLinks].find(link => Number(link.dataset.tab) === index);
-      if (!activeLink || window.innerWidth > 860) return;
-
-      const navRect = navMain.getBoundingClientRect();
-      const linkRect = activeLink.getBoundingClientRect();
-      const offset = (linkRect.left - navRect.left) - (navRect.width / 2) + (linkRect.width / 2);
-
-      navMain.scrollBy({
-        left: offset,
-        behavior: 'smooth'
-      });
-    }
-
     function setTab(index) {
-      currentTab = Math.max(0, Math.min(index, tabLinks.length - 1));
-      track.style.transform = `translateX(-${currentTab * 100}%)`;
-
+      currentTab = index;
+      track.style.transform = `translateX(-${index * 100}%)`;
       tabLinks.forEach((link) => {
-        link.classList.toggle('active', Number(link.dataset.tab) === currentTab);
+        link.classList.toggle('active', Number(link.dataset.tab) === index);
       });
-
-      centerActiveTab(currentTab);
     }
 
     tabLinks.forEach(link => {
@@ -1390,34 +955,6 @@
       e.preventDefault();
       setTab(0);
     });
-
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-
-    viewport.addEventListener('touchstart', (e) => {
-      const touch = e.changedTouches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-    }, { passive: true });
-
-    viewport.addEventListener('touchend', (e) => {
-      const touch = e.changedTouches[0];
-      touchEndX = touch.clientX;
-      touchEndY = touch.clientY;
-
-      const diffX = touchEndX - touchStartX;
-      const diffY = touchEndY - touchStartY;
-
-      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
-        if (diffX < 0) {
-          setTab(currentTab + 1);
-        } else {
-          setTab(currentTab - 1);
-        }
-      }
-    }, { passive: true });
 
     function formatBytes(bytes) {
       if (!bytes && bytes !== 0) return '-';
@@ -1526,7 +1063,6 @@
       resetOutput();
       resetProgress();
       setMessage('Archivo listo para compresión.', 'warn');
-      setTab(0);
     }
 
     async function renderPageToJPEG(page, scale, quality) {
@@ -1667,16 +1203,13 @@
         } else {
           setMessage('Este PDF ya está optimizado o no se pudo reducir más con este método.', 'warn');
         }
+
       } catch (err) {
         console.error(err);
         setMessage('No se pudo procesar el PDF. Prueba con otro archivo o con un PDF no protegido.', 'error');
       } finally {
         compressBtn.disabled = false;
       }
-    });
-
-    window.addEventListener('resize', () => {
-      centerActiveTab(currentTab);
     });
 
     syncPresetControls('optimal');
