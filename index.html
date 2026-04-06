@@ -51,6 +51,7 @@
         radial-gradient(circle at top right, rgba(45,212,191,.08), transparent 22%),
         linear-gradient(180deg, #0b1220 0%, #050b14 100%);
       color: var(--text);
+      overflow-x: hidden;
     }
 
     body {
@@ -66,6 +67,7 @@
       width: 100%;
       min-height: 100vh;
       background: transparent;
+      overflow-x: hidden;
     }
 
     .navbar {
@@ -79,7 +81,9 @@
       border-bottom: 1px solid var(--border-soft);
       background: rgba(10, 16, 28, 0.82);
       backdrop-filter: blur(16px);
-      position: static;
+      position: sticky;
+      top: 0;
+      z-index: 30;
     }
 
     .brand {
@@ -147,8 +151,11 @@
       justify-content: center;
       gap: 28px;
       height: 100%;
+      min-width: 0;
       overflow-x: auto;
+      overflow-y: hidden;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
 
     .nav-main::-webkit-scrollbar {
@@ -159,6 +166,7 @@
       position: relative;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       height: 86px;
       color: var(--muted);
       text-decoration: none;
@@ -167,6 +175,7 @@
       white-space: nowrap;
       cursor: pointer;
       transition: color .2s ease;
+      flex: 0 0 auto;
     }
 
     .nav-tab:hover,
@@ -195,6 +204,7 @@
     .nav-actions {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 12px;
       white-space: nowrap;
     }
@@ -235,8 +245,9 @@
     .viewport {
       position: relative;
       width: 100%;
-      overflow: visible;
+      overflow: hidden;
       padding: 28px 20px 36px;
+      touch-action: pan-y pinch-zoom;
     }
 
     .track {
@@ -880,38 +891,85 @@
     }
 
     @media (max-width: 860px) {
-      .viewport {
-        padding: 16px 14px 24px;
-      }
-
       .navbar {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 14px 18px 0;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+          "brand actions"
+          "tabs tabs";
+        gap: 14px 12px;
+        padding: 14px 16px 0;
+        min-height: auto;
       }
 
-      .nav-main {
-        order: 3;
-        justify-content: flex-start;
-        gap: 22px;
-        min-height: 52px;
-      }
-
-      .nav-tab {
-        height: 52px;
+      .brand {
+        grid-area: brand;
+        min-width: 0;
       }
 
       .nav-actions {
+        grid-area: actions;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .nav-main {
+        grid-area: tabs;
         justify-content: flex-start;
-        padding-bottom: 8px;
+        gap: 10px;
+        width: 100%;
+        padding: 0 0 10px;
+        border-top: 1px solid rgba(255,255,255,.04);
+        margin-top: 2px;
+      }
+
+      .nav-tab {
+        height: 46px;
+        padding: 0 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(255,255,255,.05);
+      }
+
+      .nav-tab::after {
+        display: none;
+      }
+
+      .nav-tab.active {
+        background: rgba(20,184,166,.12);
+        border-color: rgba(20,184,166,.24);
+        color: #ccfbf1;
+        box-shadow: inset 0 0 0 1px rgba(20,184,166,.08);
       }
 
       .brand-subtitle {
         white-space: normal;
       }
 
+      .brand-name {
+        font-size: 17px;
+      }
+
+      .brand-version {
+        font-size: 11px;
+        padding: 4px 7px;
+      }
+
+      .nav-login-link {
+        font-size: 13px;
+      }
+
+      .nav-signup-btn {
+        font-size: 13px;
+        padding: 10px 14px;
+        border-radius: 12px;
+      }
+
+      .viewport {
+        padding: 16px 12px 24px;
+      }
+
       .page {
-        padding: 14px 8px 28px;
+        padding: 10px 2px 24px;
       }
 
       .page-inner,
@@ -920,11 +978,15 @@
       }
 
       .title {
-        font-size: 34px;
+        font-size: 31px;
+      }
+
+      .seo-subtitle {
+        font-size: 15px;
       }
 
       .pro-title {
-        font-size: 32px;
+        font-size: 30px;
       }
 
       .stats {
@@ -936,11 +998,73 @@
       }
 
       .dropzone {
-        padding: 38px 18px;
+        padding: 34px 16px;
       }
 
       .dropzone h2 {
         font-size: 24px;
+      }
+
+      .panel,
+      .faq-item,
+      .pro-card,
+      .pro-box,
+      .price-box {
+        border-radius: 20px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .navbar {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "brand"
+          "actions"
+          "tabs";
+        padding: 12px 12px 0;
+      }
+
+      .nav-actions {
+        justify-content: flex-start;
+      }
+
+      .nav-main {
+        padding-bottom: 12px;
+      }
+
+      .nav-tab {
+        font-size: 13px;
+        padding: 0 14px;
+      }
+
+      .viewport {
+        padding: 14px 10px 20px;
+      }
+
+      .page {
+        padding: 8px 0 20px;
+      }
+
+      .title {
+        font-size: 28px;
+      }
+
+      .subtitle,
+      .faq-intro,
+      .pro-lead {
+        font-size: 14px;
+      }
+
+      .dropzone {
+        border-radius: 22px;
+      }
+
+      .dropzone h2 {
+        font-size: 22px;
+      }
+
+      .trust-panel {
+        align-items: flex-start;
       }
     }
   </style>
@@ -959,7 +1083,7 @@
         </div>
       </a>
 
-      <div class="nav-main">
+      <div class="nav-main" id="navMain">
         <a class="nav-tab active" data-tab="0">Inicio</a>
         <a class="nav-tab" data-tab="1">Funciones PRO</a>
         <a class="nav-tab" data-tab="2">FAQs</a>
@@ -971,7 +1095,7 @@
       </div>
     </nav>
 
-    <div class="viewport">
+    <div class="viewport" id="viewport">
       <div class="track" id="track">
         <section class="page">
           <div class="page-inner">
@@ -1222,16 +1346,37 @@
     const track = document.getElementById('track');
     const tabLinks = document.querySelectorAll('.nav-tab[data-tab]');
     const brandHome = document.getElementById('brandHome');
+    const navMain = document.getElementById('navMain');
+    const viewport = document.getElementById('viewport');
 
     let selectedFile = null;
     let outputUrl = null;
     let isProUser = false;
+    let currentTab = 0;
+
+    function centerActiveTab(index) {
+      const activeLink = [...tabLinks].find(link => Number(link.dataset.tab) === index);
+      if (!activeLink || window.innerWidth > 860) return;
+
+      const navRect = navMain.getBoundingClientRect();
+      const linkRect = activeLink.getBoundingClientRect();
+      const offset = (linkRect.left - navRect.left) - (navRect.width / 2) + (linkRect.width / 2);
+
+      navMain.scrollBy({
+        left: offset,
+        behavior: 'smooth'
+      });
+    }
 
     function setTab(index) {
-      track.style.transform = `translateX(-${index * 100}%)`;
+      currentTab = Math.max(0, Math.min(index, tabLinks.length - 1));
+      track.style.transform = `translateX(-${currentTab * 100}%)`;
+
       tabLinks.forEach((link) => {
-        link.classList.toggle('active', Number(link.dataset.tab) === index);
+        link.classList.toggle('active', Number(link.dataset.tab) === currentTab);
       });
+
+      centerActiveTab(currentTab);
     }
 
     tabLinks.forEach(link => {
@@ -1245,6 +1390,34 @@
       e.preventDefault();
       setTab(0);
     });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    viewport.addEventListener('touchstart', (e) => {
+      const touch = e.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+      const touch = e.changedTouches[0];
+      touchEndX = touch.clientX;
+      touchEndY = touch.clientY;
+
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
+        if (diffX < 0) {
+          setTab(currentTab + 1);
+        } else {
+          setTab(currentTab - 1);
+        }
+      }
+    }, { passive: true });
 
     function formatBytes(bytes) {
       if (!bytes && bytes !== 0) return '-';
@@ -1353,6 +1526,7 @@
       resetOutput();
       resetProgress();
       setMessage('Archivo listo para compresión.', 'warn');
+      setTab(0);
     }
 
     async function renderPageToJPEG(page, scale, quality) {
@@ -1499,6 +1673,10 @@
       } finally {
         compressBtn.disabled = false;
       }
+    });
+
+    window.addEventListener('resize', () => {
+      centerActiveTab(currentTab);
     });
 
     syncPresetControls('optimal');
