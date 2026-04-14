@@ -1048,7 +1048,7 @@
         return;
       }
 
-      const freeLimit = 400 * 1024 * 1024;
+      const freeLimit = 500 * 1024 * 1024;
       if (!isProUser && file.size > freeLimit) {
         setMessage('La versión gratis permite archivos de hasta 400 MB. Hazte Pro para quitar este límite.', 'error');
         return;
