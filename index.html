@@ -213,7 +213,7 @@
       color: var(--muted);
       line-height: 1.6;
       font-size: 15px;
-      max-width: 720px;
+      max-width: 760px;
     }
 
     .content {
@@ -429,7 +429,10 @@
       transition: .2s ease;
       text-align: center;
       text-decoration: none;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn-primary {
@@ -438,7 +441,7 @@
     }
 
     .btn-primary:hover { background: var(--accent-2); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary:disabled { opacity: .65; cursor: not-allowed; }
 
     .btn-secondary {
       background: #09111f;
@@ -661,7 +664,7 @@
 
     .modal {
       width: 100%;
-      max-width: 620px;
+      max-width: 640px;
       background: linear-gradient(180deg, rgba(17,24,39,0.98), rgba(10,15,27,0.98));
       border: 1px solid rgba(251,191,36,.18);
       border-radius: 26px;
@@ -731,6 +734,20 @@
       border: 1px solid var(--border);
     }
 
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(4, 47, 46, 0.25);
+      border-top-color: #042f2e;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @media (max-width: 900px) {
       .stats,
       .pro-grid,
@@ -783,7 +800,7 @@
         <a class="nav-link active" data-tab="0">Inicio</a>
         <a class="nav-link" data-tab="1">FAQs</a>
         <a class="nav-link" data-tab="2">Pro</a>
-        <a href="/login" class="nav-link nav-login">Login</a>
+        <a href="/login" class="nav-link nav-login" id="authLink">Login</a>
       </div>
     </nav>
 
@@ -793,12 +810,12 @@
           <div class="header">
             <div class="title-row">
               <h1 class="title">Compresso</h1>
-              <span class="version">V2.5</span>
+              <span class="version">V2.6</span>
             </div>
             <h2 class="seo-subtitle">Comprimir PDF online gratis</h2>
-            <p class="subtitle">
+            <p class="subtitle" id="heroSubtitle">
               Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores.
-              En la versión gratis puedes comprimir 1 archivo de hasta 400 MB.
+              Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.
             </p>
           </div>
 
@@ -811,7 +828,7 @@
 
             <label class="dropzone" id="dropzone" for="fileInput">
               <h2>Sube tu PDF</h2>
-              <p>Haz clic aquí o arrastra un archivo PDF. Límite gratis: hasta 400 MB por archivo.</p>
+              <p id="dropzoneText">Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.</p>
             </label>
             <input id="fileInput" type="file" accept="application/pdf" />
 
@@ -880,7 +897,7 @@
                 <div class="hint">Más alto = mejor calidad visual, menos compresión.</div>
               </div>
 
-              <div class="hint pro-hint">
+              <div class="hint pro-hint" id="planHint">
                 🔒 El control avanzado está disponible solo para usuarios Pro
               </div>
 
@@ -914,8 +931,13 @@
             </div>
 
             <div class="faq-item">
-              <h3>¿Cuál es el límite de tamaño en la versión gratis?</h3>
-              <p>Puedes comprimir un archivo PDF de hasta 400 MB por vez en la versión gratuita.</p>
+              <h3>¿Cuál es el límite si no inicio sesión?</h3>
+              <p>Sin iniciar sesión puedes comprimir archivos PDF de hasta 200 MB por vez.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Cuál es el límite con una cuenta gratuita?</h3>
+              <p>Con una cuenta gratuita registrada puedes comprimir archivos PDF de hasta 400 MB por vez.</p>
             </div>
 
             <div class="faq-item">
@@ -956,7 +978,7 @@
 
             <div class="pro-card">
               <h3>Sin límite de tamaño</h3>
-              <p>Olvídate del tope de 400 MB y procesa archivos grandes cuando realmente lo necesites.</p>
+              <p>Procesa archivos grandes cuando realmente lo necesites, sin restricciones de peso.</p>
             </div>
           </div>
 
@@ -989,24 +1011,20 @@
 
   <div class="modal-backdrop" id="limitModal">
     <div class="modal">
-      <div class="modal-badge">⭐ Límite de versión gratis</div>
-      <h3>Tu archivo supera los 400 MB</h3>
-      <p>
-        La versión gratis permite comprimir archivos PDF de hasta <strong>400 MB</strong>.
-        Hazte Pro para procesar archivos más grandes y desbloquear más funciones avanzadas.
+      <div class="modal-badge" id="modalBadge">⭐ Límite de versión gratis</div>
+      <h3 id="modalTitle">Tu archivo supera el límite actual</h3>
+      <p id="modalDescription">
+        Este archivo supera el límite disponible para tu plan actual.
       </p>
 
-      <div class="modal-list">
+      <div class="modal-list" id="modalBenefits">
         <div>Procesa archivos grandes sin límite de tamaño.</div>
         <div>Desbloquea presets de compresión avanzados.</div>
         <div>Ajusta resolución y calidad manualmente.</div>
         <div>Comprime varios archivos en una sola sesión.</div>
       </div>
 
-      <div class="modal-actions">
-        <a href="/login" class="btn btn-gold">Hazte Pro</a>
-        <button class="btn modal-close" id="closeLimitModal" type="button">Cerrar</button>
-      </div>
+      <div class="modal-actions" id="modalActions"></div>
     </div>
   </div>
 
@@ -1042,17 +1060,31 @@
     const scaleWrap = document.getElementById('scaleWrap');
     const qualityWrap = document.getElementById('qualityWrap');
 
+    const heroSubtitle = document.getElementById('heroSubtitle');
+    const dropzoneText = document.getElementById('dropzoneText');
+    const authLink = document.getElementById('authLink');
+
     const track = document.getElementById('track');
     const tabLinks = document.querySelectorAll('.nav-link[data-tab]');
     const brandHome = document.getElementById('brandHome');
 
     const limitModal = document.getElementById('limitModal');
-    const closeLimitModal = document.getElementById('closeLimitModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalActions = document.getElementById('modalActions');
 
     let selectedFile = null;
     let outputUrl = null;
-    let isProUser = false;
     let currentTab = 0;
+    let defaultCompressBtnHtml = compressBtn.innerHTML;
+
+    /*
+      Estados posibles:
+      'guest' -> sin login
+      'free'  -> cuenta gratis
+      'pro'   -> cuenta pro
+    */
+    let userPlan = 'guest';
 
     function setTab(index) {
       currentTab = index;
@@ -1073,6 +1105,30 @@
       e.preventDefault();
       setTab(0);
     });
+
+    function isProUser() {
+      return userPlan === 'pro';
+    }
+
+    function isFreeUser() {
+      return userPlan === 'free';
+    }
+
+    function isGuestUser() {
+      return userPlan === 'guest';
+    }
+
+    function getUploadLimit() {
+      if (userPlan === 'pro') return Infinity;
+      if (userPlan === 'free') return 400 * 1024 * 1024;
+      return 200 * 1024 * 1024;
+    }
+
+    function getReadablePlanLimit() {
+      if (userPlan === 'pro') return 'sin límite';
+      if (userPlan === 'free') return '400 MB';
+      return '200 MB';
+    }
 
     function formatBytes(bytes) {
       if (!bytes && bytes !== 0) return '-';
@@ -1134,7 +1190,7 @@
     }
 
     function applyProLock() {
-      if (!isProUser) {
+      if (!isProUser()) {
         preset.value = 'optimal';
         preset.disabled = true;
         presetWrap.classList.add('select-lock');
@@ -1158,7 +1214,70 @@
       }
     }
 
+    function renderPlanCopy() {
+      if (isGuestUser()) {
+        heroSubtitle.textContent =
+          'Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.';
+        dropzoneText.textContent =
+          'Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.';
+        authLink.textContent = 'Login';
+      } else if (isFreeUser()) {
+        heroSubtitle.textContent =
+          'Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta gratuita permite comprimir archivos de hasta 400 MB. Hazte Pro para comprimir sin límite de tamaño.';
+        dropzoneText.textContent =
+          'Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 400 MB.';
+        authLink.textContent = 'Mi cuenta';
+      } else {
+        heroSubtitle.textContent =
+          'Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta Pro te permite comprimir archivos sin límite de tamaño.';
+        dropzoneText.textContent =
+          'Haz clic aquí o arrastra un archivo PDF. Límite actual: sin límite.';
+        authLink.textContent = 'Mi cuenta';
+      }
+    }
+
     function openLimitModal() {
+      modalActions.innerHTML = '';
+
+      if (isGuestUser()) {
+        modalTitle.textContent = 'Tu archivo supera el límite para invitados';
+        modalDescription.innerHTML = `
+          Sin iniciar sesión puedes comprimir archivos de hasta <strong>200 MB</strong>.
+          Crea una cuenta gratis para aumentar tu límite a <strong>400 MB</strong>, o hazte Pro para comprimir <strong>sin límite de tamaño</strong>.
+        `;
+
+        modalActions.innerHTML = `
+          <a href="/register" class="btn btn-primary">Crear cuenta gratis</a>
+          <a href="/login" class="btn btn-gold">Hazte Pro</a>
+          <button class="btn modal-close" id="closeLimitModal" type="button">Continuar sin registrarme</button>
+        `;
+      } else if (isFreeUser()) {
+        modalTitle.textContent = 'Tu archivo supera el límite de tu cuenta gratuita';
+        modalDescription.innerHTML = `
+          Tu cuenta gratuita permite comprimir archivos de hasta <strong>400 MB</strong>.
+          Actualiza a Pro para comprimir archivos más grandes y desbloquear funciones avanzadas.
+        `;
+
+        modalActions.innerHTML = `
+          <a href="/login" class="btn btn-gold">Hazte Pro</a>
+          <button class="btn modal-close" id="closeLimitModal" type="button">Continuar gratis</button>
+        `;
+      } else {
+        modalTitle.textContent = 'Tu cuenta Pro no tiene límite de tamaño';
+        modalDescription.innerHTML = `
+          Si estás viendo este mensaje, revisa la validación del lado del servidor o del plan cargado en sesión.
+        `;
+
+        modalActions.innerHTML = `
+          <button class="btn modal-close" id="closeLimitModal" type="button">Cerrar</button>
+        `;
+      }
+
+      const closeBtn = document.getElementById('closeLimitModal');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+      }
+
       limitModal.classList.add('show');
       document.body.style.overflow = 'hidden';
     }
@@ -1173,6 +1292,16 @@
       downloadBtn.click();
     }
 
+    function setCompressingState(isLoading) {
+      if (isLoading) {
+        compressBtn.disabled = true;
+        compressBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Comprimiendo...</span>';
+      } else {
+        compressBtn.disabled = !selectedFile;
+        compressBtn.innerHTML = defaultCompressBtnHtml;
+      }
+    }
+
     function loadFile(file) {
       if (!file) return;
 
@@ -1181,8 +1310,8 @@
         return;
       }
 
-      const freeLimit = 400 * 1024 * 1024;
-      if (!isProUser && file.size > freeLimit) {
+      const uploadLimit = getUploadLimit();
+      if (file.size > uploadLimit) {
         selectedFile = null;
         fileInput.value = '';
         filePanel.style.display = 'none';
@@ -1203,7 +1332,7 @@
       compressBtn.disabled = false;
       resetOutput();
       resetProgress();
-      setMessage('Archivo listo para compresión.', 'warn');
+      setMessage(`Archivo listo para compresión. Límite actual de tu plan: ${getReadablePlanLimit()}.`, 'warn');
     }
 
     async function renderPageToJPEG(page, scale, quality) {
@@ -1226,7 +1355,11 @@
 
     async function compressPdfAggressive(file, scale, quality) {
       const buffer = await file.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: buffer, useWorkerFetch: true, isEvalSupported: false });
+      const loadingTask = pdfjsLib.getDocument({
+        data: buffer,
+        useWorkerFetch: true,
+        isEvalSupported: false
+      });
       const pdf = await loadingTask.promise;
 
       let doc;
@@ -1236,7 +1369,7 @@
         setProgress(Math.min(95, progressBase), `Procesando página ${pageNum} de ${pdf.numPages}...`);
 
         const page = await pdf.getPage(pageNum);
-        const result = await renderPageToJPEG(page, scale, quality);
+        const result = await renderPageToJPEG(page, isProUser() ? scale : 1.5, isProUser() ? quality : 0.9);
 
         const mmPerPx = 25.4 / 96;
         const pageWidthMm = result.widthPx * mmPerPx;
@@ -1266,7 +1399,7 @@
     }
 
     function showProMessage() {
-      if (!isProUser) {
+      if (!isProUser()) {
         setMessage('Esta opción está disponible solo para usuarios Pro.', 'warn');
       }
     }
@@ -1296,9 +1429,9 @@
     preset.addEventListener('click', showProMessage);
     scaleRange.addEventListener('click', showProMessage);
     qualityRange.addEventListener('click', showProMessage);
-    presetWrap.addEventListener('click', () => !isProUser && showProMessage());
-    scaleWrap.addEventListener('click', () => !isProUser && showProMessage());
-    qualityWrap.addEventListener('click', () => !isProUser && showProMessage());
+    presetWrap.addEventListener('click', () => !isProUser() && showProMessage());
+    scaleWrap.addEventListener('click', () => !isProUser() && showProMessage());
+    qualityWrap.addEventListener('click', () => !isProUser() && showProMessage());
 
     clearBtn.addEventListener('click', () => {
       selectedFile = null;
@@ -1309,9 +1442,8 @@
       resetOutput();
       resetProgress();
       setMessage('');
+      setCompressingState(false);
     });
-
-    closeLimitModal.addEventListener('click', closeModal);
 
     limitModal.addEventListener('click', (e) => {
       if (e.target === limitModal) {
@@ -1328,13 +1460,13 @@
     compressBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
 
-      compressBtn.disabled = true;
       resetOutput();
       setMessage('Procesando PDF...', 'warn');
+      setCompressingState(true);
 
       try {
-        const scale = isProUser ? Number(scaleRange.value) : 1.5;
-        const quality = isProUser ? Number(qualityRange.value) : 0.9;
+        const scale = Number(scaleRange.value);
+        const quality = Number(qualityRange.value);
         const compressedBlob = await compressPdfAggressive(selectedFile, scale, quality);
 
         outputUrl = URL.createObjectURL(compressedBlob);
@@ -1360,18 +1492,26 @@
           setMessage('Este PDF ya está optimizado o no se pudo reducir más con este método.', 'warn');
           triggerAutoDownload();
         }
-
       } catch (err) {
         console.error(err);
         setMessage('No se pudo procesar el PDF. Prueba con otro archivo o con un PDF no protegido.', 'error');
       } finally {
-        compressBtn.disabled = false;
+        setCompressingState(false);
       }
     });
+
+    /*
+      CAMBIA ESTE VALOR SEGUN EL USUARIO REAL:
+      'guest' -> sin login
+      'free'  -> cuenta gratis
+      'pro'   -> cuenta pro
+    */
+    userPlan = 'guest';
 
     syncPresetControls('optimal');
     updateRangeLabels();
     applyProLock();
+    renderPlanCopy();
     setTab(0);
   </script>
 </body>
