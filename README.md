@@ -1,39 +1,37 @@
-# Oaxsun PDF Compressor v0.1 (API + Worker + Simple UI)
+# Compresso
 
-A minimal, production-minded starter to compress PDFs (max upload: **200 MiB**) using:
-- FastAPI (API)
-- Redis + RQ (job queue)
-- Ghostscript (compression)
-- qpdf (optional pre-optimization)
-- Simple `index.html` UI (upload + progress + download)
+Proyecto listo para Git con:
 
-## Quick start (Docker)
-```bash
-docker compose up --build
-```
+- Frontend con el look de `compresso.oaxsun.tech`
+- Login y registro en popup dentro de la app
+- Compresor PDF separado en `app.js`
+- Auth con Supabase
+- Upgrade a Pro con Stripe + Supabase Edge Functions
 
-Open UI:
-- http://localhost:8000/
+## Archivos principales
 
-API health:
-- http://localhost:8000/health
+- `index.html` -> interfaz principal
+- `styles.css` -> estilos
+- `app.js` -> lógica de compresión
+- `auth.js` -> login / registro / plan
+- `pricing.js` -> checkout premium
+- `supabaseClient.js` -> cliente Supabase
+- `config.example.js` -> copia a `config.js`
 
-## Endpoints
-- `POST /pdf/compress` (multipart: `file`, `level=high|medium|low`) -> `{ job_id }`
-- `GET /jobs/{job_id}` -> status + sizes + ratio + error
-- `GET /jobs/{job_id}/download` -> download when done
+## Configuración rápida
 
-## Notes
-- Upload limit is enforced both by `Content-Length` (when present) and by streaming read limit.
-- Files are stored in `/data` inside containers (bind-mounted to `./data` on host).
-- Results are kept for `JOB_TTL_SECONDS` (default 6 hours). A small cleanup runs on worker startup and periodically during jobs.
+1. Copia `config.example.js` a `config.js`
+2. Pon tu `SUPABASE_URL` y `SUPABASE_ANON_KEY`
+3. Ejecuta `supabase/schema.sql` en tu proyecto Supabase
+4. Sube las Edge Functions
+5. Configura Stripe
 
-## Local dev (without Docker)
-Requires: Redis, Ghostscript (`gs`), qpdf.
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export REDIS_URL=redis://localhost:6379/0
-uvicorn api.main:app --reload --port 8000
-python worker/worker.py
-```
+## Planes
+
+- guest: 200 MB
+- free: 400 MB
+- pro: ilimitado
+
+## Nota
+
+No expongas nunca la `SUPABASE_SERVICE_ROLE_KEY` en el frontend.
