@@ -643,6 +643,94 @@
       line-height: 1.1;
     }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 620px;
+      background: linear-gradient(180deg, rgba(17,24,39,0.98), rgba(10,15,27,0.98));
+      border: 1px solid rgba(251,191,36,.18);
+      border-radius: 26px;
+      padding: 24px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+    }
+
+    .modal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fde68a;
+      background: rgba(251,191,36,.12);
+      border: 1px solid rgba(251,191,36,.22);
+      padding: 8px 12px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+
+    .modal h3 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .modal p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .modal-list {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0 0;
+    }
+
+    .modal-list div {
+      color: #dbe7f3;
+      font-size: 14px;
+      line-height: 1.55;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .modal-list div::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .modal-close {
+      background: #09111f;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
     @media (max-width: 900px) {
       .stats,
       .pro-grid,
@@ -675,6 +763,10 @@
 
       .pro-title {
         font-size: 31px;
+      }
+
+      .modal h3 {
+        font-size: 24px;
       }
     }
   </style>
@@ -895,6 +987,29 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="limitModal">
+    <div class="modal">
+      <div class="modal-badge">⭐ Límite de versión gratis</div>
+      <h3>Tu archivo supera los 400 MB</h3>
+      <p>
+        La versión gratis permite comprimir archivos PDF de hasta <strong>400 MB</strong>.
+        Hazte Pro para procesar archivos más grandes y desbloquear más funciones avanzadas.
+      </p>
+
+      <div class="modal-list">
+        <div>Procesa archivos grandes sin límite de tamaño.</div>
+        <div>Desbloquea presets de compresión avanzados.</div>
+        <div>Ajusta resolución y calidad manualmente.</div>
+        <div>Comprime varios archivos en una sola sesión.</div>
+      </div>
+
+      <div class="modal-actions">
+        <a href="/login" class="btn btn-gold">Hazte Pro</a>
+        <button class="btn modal-close" id="closeLimitModal" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script type="module">
     import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.mjs';
@@ -930,6 +1045,9 @@
     const track = document.getElementById('track');
     const tabLinks = document.querySelectorAll('.nav-link[data-tab]');
     const brandHome = document.getElementById('brandHome');
+
+    const limitModal = document.getElementById('limitModal');
+    const closeLimitModal = document.getElementById('closeLimitModal');
 
     let selectedFile = null;
     let outputUrl = null;
@@ -1040,6 +1158,21 @@
       }
     }
 
+    function openLimitModal() {
+      limitModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      limitModal.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function triggerAutoDownload() {
+      if (!downloadBtn.href) return;
+      downloadBtn.click();
+    }
+
     function loadFile(file) {
       if (!file) return;
 
@@ -1048,9 +1181,17 @@
         return;
       }
 
-      const freeLimit = 500 * 1024 * 1024;
+      const freeLimit = 400 * 1024 * 1024;
       if (!isProUser && file.size > freeLimit) {
-        setMessage('La versión gratis permite archivos de hasta 400 MB. Hazte Pro para quitar este límite.', 'error');
+        selectedFile = null;
+        fileInput.value = '';
+        filePanel.style.display = 'none';
+        originalSize.textContent = '-';
+        compressBtn.disabled = true;
+        resetOutput();
+        resetProgress();
+        setMessage('');
+        openLimitModal();
         return;
       }
 
@@ -1170,6 +1311,20 @@
       setMessage('');
     });
 
+    closeLimitModal.addEventListener('click', closeModal);
+
+    limitModal.addEventListener('click', (e) => {
+      if (e.target === limitModal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && limitModal.classList.contains('show')) {
+        closeModal();
+      }
+    });
+
     compressBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
 
@@ -1199,9 +1354,11 @@
         savedPercent.textContent = `${Math.max(0, reduction).toFixed(1)}%`;
 
         if (compressedBlob.size < selectedFile.size) {
-          setMessage('PDF comprimido correctamente. Descárgalo con el botón.', 'success');
+          setMessage('PDF comprimido correctamente. La descarga comenzó automáticamente.', 'success');
+          triggerAutoDownload();
         } else {
           setMessage('Este PDF ya está optimizado o no se pudo reducir más con este método.', 'warn');
+          triggerAutoDownload();
         }
 
       } catch (err) {
