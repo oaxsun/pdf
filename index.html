@@ -4,15 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compresso - Comprimir PDF Online Gratis | Reducir Tamaño PDF</title>
-
-  <meta name="description" content="Compresso es una herramienta gratuita para comprimir PDF online sin perder calidad. Reduce el tamaño de tus archivos PDF de forma rápida y segura desde tu navegador." />
-  <meta name="keywords" content="comprimir pdf, reducir pdf, compresor pdf online, optimizar pdf, reducir tamaño pdf gratis, compress pdf online, pdf compressor" />
-  <meta name="author" content="Compresso" />
-  <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#14b8a6" />
-
-  <link rel="canonical" href="https://compresso.oaxsun.tech/" />
   <link rel="stylesheet" href="./styles.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="module" src="./supabaseClient.js"></script>
+  <script type="module" src="./auth.js"></script>
+  <script type="module" src="./pricing.js"></script>
+  <script type="module" src="./app.js"></script>
 </head>
 <body>
   <div class="shell">
@@ -26,20 +24,22 @@
         <a class="nav-link active" data-tab="0">Inicio</a>
         <a class="nav-link" data-tab="1">FAQs</a>
         <a class="nav-link" data-tab="2">Pro</a>
-        <a href="#" class="nav-link nav-login" id="authTrigger">Login</a>
+        <button id="openAuthBtn" class="nav-link nav-login">Login</button>
+        <button id="logoutBtn" class="nav-link nav-login hidden">Salir</button>
       </div>
     </nav>
 
     <div class="viewport">
       <div class="track" id="track">
+        <!-- INICIO -->
         <section class="page">
-          <div class="header">
+          <div class="header header-clean">
             <div class="title-row">
               <h1 class="title">Compresso</h1>
               <span class="version">V3.0</span>
             </div>
             <h2 class="seo-subtitle">Comprimir PDF online gratis</h2>
-            <p class="subtitle" id="heroSubtitle">
+            <p class="subtitle" id="heroText">
               Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores.
               Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.
             </p>
@@ -52,21 +52,11 @@
               </div>
             </div>
 
-            <div class="panel account-panel">
-              <div class="row">
-                <div>
-                  <div class="file-name">Estado de cuenta</div>
-                  <div class="muted" id="accountSummary">Invitado · Límite actual 200 MB</div>
-                </div>
-                <span class="plan-badge" id="planBadge">Guest</span>
-              </div>
-            </div>
-
             <label class="dropzone" id="dropzone" for="fileInput">
               <h2>Sube tu PDF</h2>
               <p id="dropzoneText">Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.</p>
             </label>
-            <input id="fileInput" type="file" accept="application/pdf" />
+            <input id="fileInput" type="file" accept="application/pdf" hidden />
 
             <div class="panel" id="filePanel" style="display:none;">
               <div class="row">
@@ -93,48 +83,73 @@
               </div>
             </div>
 
+            <div class="panel account-panel" id="accountPanel">
+              <div class="row">
+                <div>
+                  <div class="panel-mini-label">Estado de cuenta</div>
+                  <div class="account-plan-line">
+                    <span id="planBadge" class="account-badge">Invitado</span>
+                  </div>
+                  <div class="muted account-help" id="accountHelp">
+                    Sin login: 200 MB · Cuenta gratis: 400 MB · Pro: ilimitado
+                  </div>
+                </div>
+
+                <div class="account-cta">
+                  <button id="buyProBtn" class="btn btn-gold" type="button">Comprar Premium</button>
+                </div>
+              </div>
+            </div>
+
             <div class="panel controls">
-              <div class="field">
-                <label for="preset">
-                  Preset
-                  <span class="label-pro">(Pro)</span>
-                </label>
-                <div class="select-lock" id="presetWrap">
-                  <select id="preset" class="select">
-                    <option value="light">Ligero</option>
-                    <option value="optimal" selected>Óptimo</option>
-                    <option value="extreme">Extremo</option>
-                  </select>
-                </div>
-                <div class="hint">En la versión gratis se usa automáticamente el ajuste recomendado: 1.5x y 90%.</div>
-              </div>
+              <button class="accordion-toggle" id="presetAccordionBtn" type="button" aria-expanded="false">
+                <span>Presets</span>
+                <span class="accordion-icon" id="presetAccordionIcon">+</span>
+              </button>
 
-              <div class="field">
-                <label for="scaleRange">
-                  Resolución de render
-                  <span class="label-pro">(Pro)</span>
-                </label>
-                <div class="range-wrap locked" id="scaleWrap">
-                  <input id="scaleRange" class="range" type="range" min="0.6" max="2" step="0.1" value="1.5" />
-                  <div class="range-value" id="scaleValue">1.5x</div>
+              <div class="accordion-content hidden" id="presetAccordionContent">
+                <div class="field">
+                  <label for="preset">
+                    Preset
+                    <span class="label-pro">(Pro)</span>
+                  </label>
+                  <div class="select-lock" id="presetWrap">
+                    <select id="preset" class="select">
+                      <option value="light">Ligero</option>
+                      <option value="optimal" selected>Óptimo</option>
+                      <option value="extreme">Extremo</option>
+                    </select>
+                  </div>
+                  <div class="hint">En la versión gratis se usa automáticamente el ajuste recomendado: 1.5x y 90%.</div>
                 </div>
-                <div class="hint">Más alto = mejor calidad, más peso.</div>
-              </div>
 
-              <div class="field">
-                <label for="qualityRange">
-                  Calidad JPEG
-                  <span class="label-pro">(Pro)</span>
-                </label>
-                <div class="range-wrap locked" id="qualityWrap">
-                  <input id="qualityRange" class="range" type="range" min="0.35" max="0.95" step="0.05" value="0.9" />
-                  <div class="range-value" id="qualityValue">90%</div>
+                <div class="field">
+                  <label for="scaleRange">
+                    Resolución de render
+                    <span class="label-pro">(Pro)</span>
+                  </label>
+                  <div class="range-wrap locked" id="scaleWrap">
+                    <input id="scaleRange" class="range" type="range" min="0.6" max="2" step="0.1" value="1.5" />
+                    <div class="range-value" id="scaleValue">1.5x</div>
+                  </div>
+                  <div class="hint">Más alto = mejor calidad, más peso.</div>
                 </div>
-                <div class="hint">Más alto = mejor calidad visual, menos compresión.</div>
-              </div>
 
-              <div class="hint pro-hint">
-                🔒 El control avanzado está disponible solo para usuarios Pro
+                <div class="field">
+                  <label for="qualityRange">
+                    Calidad JPEG
+                    <span class="label-pro">(Pro)</span>
+                  </label>
+                  <div class="range-wrap locked" id="qualityWrap">
+                    <input id="qualityRange" class="range" type="range" min="0.35" max="0.95" step="0.05" value="0.9" />
+                    <div class="range-value" id="qualityValue">90%</div>
+                  </div>
+                  <div class="hint">Más alto = mejor calidad visual, menos compresión.</div>
+                </div>
+
+                <div class="hint pro-hint">
+                  🔒 El control avanzado está disponible solo para usuarios Pro
+                </div>
               </div>
 
               <div class="hint">
@@ -142,10 +157,10 @@
               </div>
 
               <button class="btn btn-primary" id="compressBtn" type="button" disabled>Comprimir PDF</button>
-              <a id="downloadBtn" class="btn btn-secondary" style="display:none;" download="pdf-comprimido.pdf">Descargar PDF comprimido</a>
+              <a id="downloadBtn" class="btn btn-secondary hidden" download="pdf-comprimido.pdf">Descargar PDF comprimido</a>
             </div>
 
-            <div class="progress-wrap" id="progressWrap">
+            <div class="progress-wrap hidden" id="progressWrap">
               <div class="message" id="progressText">Preparando...</div>
               <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
             </div>
@@ -154,6 +169,7 @@
           </div>
         </section>
 
+        <!-- FAQ -->
         <section class="page">
           <h2 class="section-title">Preguntas frecuentes</h2>
           <p class="faq-intro">
@@ -193,6 +209,7 @@
           </div>
         </section>
 
+        <!-- PRO -->
         <section class="page pro-page">
           <div class="pro-badge">⭐ Compresso Pro</div>
           <h2 class="pro-title">Desbloquea el modo avanzado y comprime sin límites</h2>
@@ -236,7 +253,7 @@
                 Más control, más capacidad y una experiencia pensada para usuarios que trabajan en serio con PDFs.
               </div>
               <div class="pro-cta">
-                <button id="buyProBtn" class="btn btn-gold" type="button">Hazte Pro</button>
+                <button id="buyProBtnPage" class="btn btn-gold" type="button">Hazte Pro</button>
               </div>
             </div>
           </div>
@@ -245,49 +262,43 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="authModal">
-    <div class="modal auth-modal">
-      <button class="modal-x" id="closeAuthModal" type="button">×</button>
-      <div class="modal-badge">🔐 Tu cuenta Compresso</div>
-      <h3 id="authTitle">Entrar a Compresso</h3>
-      <p id="authDescription">Inicia sesión o crea tu cuenta gratis para aumentar tu límite y guardar tu plan.</p>
+  <div id="authModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-badge">Accede a Compresso</div>
+      <h3>Login / Registro</h3>
 
-      <div class="auth-switcher">
-        <button class="tab-pill active" id="showLoginTab" type="button">Login</button>
-        <button class="tab-pill" id="showRegisterTab" type="button">Registro</button>
+      <div class="auth-tabs">
+        <button id="showLoginTab" class="btn btn-secondary" type="button">Login</button>
+        <button id="showRegisterTab" class="btn btn-secondary" type="button">Registro</button>
       </div>
 
       <form id="loginForm" class="auth-form">
-        <input id="loginEmail" type="email" placeholder="Tu email" required />
-        <input id="loginPassword" type="password" placeholder="Tu contraseña" required />
-        <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+        <input id="loginEmail" class="select" type="email" placeholder="Tu email" required />
+        <input id="loginPassword" class="select" type="password" placeholder="Tu contraseña" required />
+        <button class="btn btn-primary" type="submit">Entrar</button>
       </form>
 
       <form id="registerForm" class="auth-form hidden">
-        <input id="registerEmail" type="email" placeholder="Tu email" required />
-        <input id="registerPassword" type="password" placeholder="Crea una contraseña" required />
+        <input id="registerEmail" class="select" type="email" placeholder="Tu email" required />
+        <input id="registerPassword" class="select" type="password" placeholder="Crea una contraseña" required />
         <button class="btn btn-primary" type="submit">Crear cuenta gratis</button>
       </form>
 
-      <div class="message" id="authMessage"></div>
+      <div class="modal-actions">
+        <button id="closeAuthModal" class="btn modal-close" type="button">Cerrar</button>
+      </div>
+
+      <div id="authMessage" class="message"></div>
     </div>
   </div>
 
   <div class="modal-backdrop hidden" id="limitModal">
     <div class="modal">
-      <button class="modal-x" id="closeLimitX" type="button">×</button>
       <div class="modal-badge">⭐ Límite de versión gratis</div>
       <h3 id="limitTitle">Tu archivo supera el límite actual</h3>
       <p id="limitDescription">Este archivo supera el límite disponible para tu plan actual.</p>
-      <div class="modal-list" id="limitBenefits"></div>
       <div class="modal-actions" id="limitActions"></div>
     </div>
   </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module" src="./supabaseClient.js"></script>
-  <script type="module" src="./auth.js"></script>
-  <script type="module" src="./pricing.js"></script>
-  <script type="module" src="./app.js"></script>
 </body>
 </html>
