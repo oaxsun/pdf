@@ -1,7 +1,20 @@
 import { supabase } from "./supabaseClient.js";
 import { APP_CONFIG } from "./config.js";
 
-export async function startCheckout() {
+const plansModal = document.getElementById("plansModal");
+const closePlansModal = document.getElementById("closePlansModal");
+const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
+const plansProBtn = document.getElementById("plansProBtn");
+
+export function openPlansModal() {
+  plansModal.classList.remove("hidden");
+}
+
+export function closePlansModalFn() {
+  plansModal.classList.add("hidden");
+}
+
+async function goToCheckout() {
   const plan = window.currentUserPlan || "guest";
 
   if (plan === "guest") {
@@ -13,7 +26,8 @@ export async function startCheckout() {
 
   const triggerButtons = [
     document.getElementById("buyProBtn"),
-    document.getElementById("buyProBtnPage")
+    document.getElementById("buyProBtnPage"),
+    plansProBtn
   ];
 
   triggerButtons.forEach((btn) => {
@@ -55,8 +69,35 @@ export async function startCheckout() {
     triggerButtons.forEach((btn) => {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = btn.id === "buyProBtn" ? "Hazte PRO" : "Hazte Pro";
+        btn.textContent = "Hazte PRO";
       }
     });
   }
 }
+
+export async function startCheckout() {
+  openPlansModal();
+}
+
+document.getElementById("buyProBtn")?.addEventListener("click", startCheckout);
+document.getElementById("buyProBtnPage")?.addEventListener("click", startCheckout);
+
+closePlansModal?.addEventListener("click", closePlansModalFn);
+
+plansModal?.addEventListener("click", (e) => {
+  if (e.target === plansModal) {
+    closePlansModalFn();
+  }
+});
+
+plansGuestLoginBtn?.addEventListener("click", () => {
+  closePlansModalFn();
+  document.dispatchEvent(new CustomEvent("open-auth-modal", {
+    detail: { mode: "login" }
+  }));
+});
+
+plansProBtn?.addEventListener("click", async () => {
+  closePlansModalFn();
+  await goToCheckout();
+});
