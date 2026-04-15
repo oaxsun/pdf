@@ -32,6 +32,7 @@ function setAuthMessage(text, isError = false) {
 export function openAuthModal(mode = "login") {
   authModal.classList.remove("hidden");
   setAuthMessage("");
+
   if (mode === "register") {
     registerForm.classList.remove("hidden");
     loginForm.classList.add("hidden");
