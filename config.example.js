@@ -1,5 +1,4 @@
 export const APP_CONFIG = {
-  SUPABASE_URL: "https://TU-PROYECTO.supabase.co",
-  SUPABASE_ANON_KEY: "TU_SUPABASE_ANON_KEY",
-  CREATE_CHECKOUT_FUNCTION_URL: "https://TU-PROYECTO.supabase.co/functions/v1/create-checkout-session"
+  SUPABASE_URL: "https://hgteuswezxhxtjhwwnkg.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_0FQaBGI448upKh7w_7Q81w_CRyxLid5"
 };
