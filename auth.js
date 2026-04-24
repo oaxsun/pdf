@@ -1,15 +1,10 @@
 import { supabase } from "./supabaseClient.js";
 
-const authModal = document.getElementById("authModal");
-const openAuthBtn = document.getElementById("openAuthBtn");
-const closeAuthModal = document.getElementById("closeAuthModal");
-const logoutBtn = document.getElementById("logoutBtn");
-const authMessage = document.getElementById("authMessage");
+const accountNavBtn = document.getElementById("accountNavBtn");
 
+const authMessage = document.getElementById("authMessage");
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
-const showLoginTab = document.getElementById("showLoginTab");
-const showRegisterTab = document.getElementById("showRegisterTab");
 
 const loginEmail = document.getElementById("loginEmail");
 const loginPassword = document.getElementById("loginPassword");
@@ -21,68 +16,77 @@ const heroText = document.getElementById("heroText");
 const dropzoneText = document.getElementById("dropzoneText");
 const accountHelp = document.getElementById("accountHelp");
 
+const accountGuestView = document.getElementById("accountGuestView");
+const accountUserView = document.getElementById("accountUserView");
+const accountEmail = document.getElementById("accountEmail");
+const accountPlan = document.getElementById("accountPlan");
+const accountPlanDescription = document.getElementById("accountPlanDescription");
+const accountUpgradeBtn = document.getElementById("accountUpgradeBtn");
+const accountLogoutBtn = document.getElementById("accountLogoutBtn");
+const resetPasswordBtn = document.getElementById("resetPasswordBtn");
+const accountPageLead = document.getElementById("accountPageLead");
+
 window.currentUserPlan = "guest";
 window.currentUser = null;
 
 function setAuthMessage(text, isError = false) {
+  if (!authMessage) return;
   authMessage.textContent = text;
   authMessage.style.color = isError ? "#fca5a5" : "#94a3b8";
 }
 
-export function openAuthModal(mode = "login") {
-  authModal.classList.remove("hidden");
-  setAuthMessage("");
-
-  if (mode === "register") {
-    registerForm.classList.remove("hidden");
-    loginForm.classList.add("hidden");
-  } else {
-    loginForm.classList.remove("hidden");
-    registerForm.classList.add("hidden");
-  }
+function goToAccountTab() {
+  accountNavBtn?.click();
 }
 
-function closeModal() {
-  authModal.classList.add("hidden");
-  setAuthMessage("");
-}
+function renderPlanUi(plan, profile = null) {
+  window.currentUserPlan = plan;
+  window.currentUser = profile;
 
-function showLogin() {
-  loginForm.classList.remove("hidden");
-  registerForm.classList.add("hidden");
-}
-
-function showRegister() {
-  registerForm.classList.remove("hidden");
-  loginForm.classList.add("hidden");
-}
-
-function renderPlanUi(plan) {
   if (plan === "pro") {
     planBadge.textContent = "Pro";
     heroText.textContent = "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta Pro te permite comprimir archivos sin límite de tamaño.";
     dropzoneText.textContent = "Haz clic aquí o arrastra un archivo PDF. Límite actual: sin límite.";
     accountHelp.textContent = "Plan activo: Pro · Compresión ilimitada · Controles avanzados desbloqueados";
-    openAuthBtn.classList.add("hidden");
-    logoutBtn.classList.remove("hidden");
+    accountNavBtn.textContent = "Cuenta";
   } else if (plan === "free") {
     planBadge.textContent = "Gratis";
     heroText.textContent = "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta gratuita permite comprimir archivos de hasta 400 MB. Hazte Pro para comprimir sin límite de tamaño.";
     dropzoneText.textContent = "Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 400 MB.";
     accountHelp.textContent = "Plan activo: Gratis · Límite por archivo: 400 MB";
-    openAuthBtn.classList.add("hidden");
-    logoutBtn.classList.remove("hidden");
+    accountNavBtn.textContent = "Cuenta";
   } else {
     planBadge.textContent = "Invitado";
     heroText.textContent = "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.";
     dropzoneText.textContent = "Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.";
     accountHelp.textContent = "Sin login: 200 MB · Cuenta gratis: 400 MB · Pro: ilimitado";
-    openAuthBtn.classList.remove("hidden");
-    logoutBtn.classList.add("hidden");
+    accountNavBtn.textContent = "Login";
   }
 
-  window.currentUserPlan = plan;
+  renderAccountPage(plan, profile);
   document.dispatchEvent(new CustomEvent("plan-updated", { detail: { plan } }));
+}
+
+function renderAccountPage(plan, profile) {
+  if (plan === "guest") {
+    accountGuestView.classList.remove("hidden");
+    accountUserView.classList.add("hidden");
+    accountPageLead.textContent = "Inicia sesión o crea una cuenta gratis para aumentar tu límite a 400 MB.";
+    return;
+  }
+
+  accountGuestView.classList.add("hidden");
+  accountUserView.classList.remove("hidden");
+
+  accountEmail.textContent = profile?.email || "-";
+  accountPlan.textContent = plan === "pro" ? "Pro" : "Gratis";
+
+  accountPlanDescription.textContent = plan === "pro"
+    ? "Compresión sin límite de tamaño y controles avanzados desbloqueados."
+    : "Límite actual: 400 MB por archivo.";
+
+  accountUpgradeBtn.classList.toggle("hidden", plan === "pro");
+  accountPageLead.textContent = "Administra tu correo, contraseña, suscripción y sesión.";
 }
 
 async function fetchProfilePlan(userId) {
@@ -92,33 +96,34 @@ async function fetchProfilePlan(userId) {
     .eq("id", userId)
     .single();
 
-  if (error || !data) return "free";
+  if (error || !data) {
+    return {
+      plan: "free",
+      profile: null
+    };
+  }
 
-  window.currentUser = data;
-  return data.plan || "free";
+  return {
+    plan: data.plan || "free",
+    profile: data
+  };
 }
 
 async function refreshSessionState() {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session?.user) {
-    window.currentUser = null;
-    renderPlanUi("guest");
+    renderPlanUi("guest", null);
     return;
   }
 
-  const plan = await fetchProfilePlan(session.user.id);
-  renderPlanUi(plan);
+  const { plan, profile } = await fetchProfilePlan(session.user.id);
+
+  renderPlanUi(plan, {
+    ...profile,
+    email: profile?.email || session.user.email
+  });
 }
-
-openAuthBtn?.addEventListener("click", () => openAuthModal("login"));
-closeAuthModal?.addEventListener("click", closeModal);
-showLoginTab?.addEventListener("click", showLogin);
-showRegisterTab?.addEventListener("click", showRegister);
-
-document.addEventListener("open-auth-modal", (event) => {
-  openAuthModal(event.detail?.mode || "login");
-});
 
 loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -134,8 +139,9 @@ loginForm?.addEventListener("submit", async (e) => {
     return;
   }
 
+  setAuthMessage("Sesión iniciada.");
   await refreshSessionState();
-  closeModal();
+  goToAccountTab();
 });
 
 registerForm?.addEventListener("submit", async (e) => {
@@ -154,12 +160,41 @@ registerForm?.addEventListener("submit", async (e) => {
 
   setAuthMessage("Cuenta creada. Si activaste confirmación por correo, revisa tu email.");
   await refreshSessionState();
+  goToAccountTab();
 });
 
-logoutBtn?.addEventListener("click", async () => {
+accountLogoutBtn?.addEventListener("click", async () => {
   await supabase.auth.signOut();
-  window.currentUser = null;
-  renderPlanUi("guest");
+  renderPlanUi("guest", null);
+  goToAccountTab();
+});
+
+resetPasswordBtn?.addEventListener("click", async () => {
+  const email = accountEmail.textContent;
+
+  if (!email || email === "-") {
+    setAuthMessage("No encontramos un correo válido.", true);
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
+
+  if (error) {
+    setAuthMessage(error.message, true);
+    return;
+  }
+
+  setAuthMessage("Te enviamos un enlace para cambiar tu contraseña.");
+});
+
+accountUpgradeBtn?.addEventListener("click", () => {
+  document.dispatchEvent(new CustomEvent("open-plans-modal"));
+});
+
+document.addEventListener("open-auth-modal", () => {
+  goToAccountTab();
 });
 
 supabase.auth.onAuthStateChange(async () => {
