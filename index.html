@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Compresso - Comprimir PDF Online Gratis</title>
-
+  <title>Compresso - Comprimir PDF Online Gratis | Reducir Tamaño PDF</title>
   <link rel="stylesheet" href="./styles.css" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -13,236 +12,357 @@
   <script type="module" src="./pricing.js"></script>
   <script type="module" src="./app.js"></script>
 </head>
-
 <body>
-<div class="shell">
+  <div class="shell">
+    <nav class="navbar">
+      <a href="#" class="brand" id="brandHome">
+        <span class="brand-dot"></span>
+        <span>Compresso</span>
+      </a>
 
-<!-- NAV -->
-<nav class="navbar">
-  <a href="#" class="brand" id="brandHome">
-    <span class="brand-dot"></span>
-    <span>Compresso</span>
-  </a>
+      <div class="nav-links">
+        <a class="nav-link active" data-tab="0">Inicio</a>
+        <a class="nav-link" data-tab="1">FAQs</a>
+        <a class="nav-link" data-tab="2">Pro</a>
+        <a class="nav-link nav-login" data-tab="3" id="accountNavBtn">Login</a>
+      </div>
+    </nav>
 
-  <div class="nav-links">
-    <a class="nav-link active" data-tab="0">Inicio</a>
-    <a class="nav-link" data-tab="1">FAQs</a>
-    <a class="nav-link" data-tab="2">Pro</a>
-    <a class="nav-link" data-tab="3" id="accountNavBtn">Login</a>
-  </div>
-</nav>
+    <div class="viewport">
+      <div class="track" id="track">
+        <section class="page">
+          <div class="header header-clean">
+            <div class="title-row">
+              <h1 class="title">Compresso</h1>
+              <span class="version">V3.0</span>
+            </div>
+            <h2 class="seo-subtitle">Comprimir PDF online gratis</h2>
+            <p class="subtitle" id="heroText">
+              Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores.
+              Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.
+            </p>
+          </div>
 
-<div class="viewport">
-<div class="track" id="track">
+          <div class="content">
+            <div class="panel trust-panel">
+              <div class="muted trust-text">
+                🔒 Tus archivos no se suben a servidores. Todo se procesa localmente en tu navegador.
+              </div>
+            </div>
 
-<!-- ================= HOME ================= -->
-<section class="page">
+            <label class="dropzone" id="dropzone" for="fileInput">
+              <h2>Sube tu PDF</h2>
+              <p id="dropzoneText">Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.</p>
+            </label>
+            <input id="fileInput" type="file" accept="application/pdf" hidden />
 
-<div class="header header-clean">
-  <h1 class="title">Compresso <span class="version">V3.0</span></h1>
-  <p id="heroText" class="subtitle">
-    Reduce el tamaño de tus PDFs sin subir archivos. Invitado: 200MB · Cuenta: 400MB · Pro: ilimitado
-  </p>
-</div>
+            <div class="panel" id="filePanel" style="display:none;">
+              <div class="row">
+                <div>
+                  <div class="file-name" id="fileName">-</div>
+                  <div class="muted" id="fileMeta">-</div>
+                </div>
+                <button class="btn btn-secondary" id="clearBtn" type="button">Quitar archivo</button>
+              </div>
+            </div>
 
-<div class="content">
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Tamaño original</div>
+                <div class="value" id="originalSize">-</div>
+              </div>
+              <div class="stat">
+                <div class="label">Tamaño final</div>
+                <div class="value" id="finalSize">-</div>
+              </div>
+              <div class="stat">
+                <div class="label">Reducción</div>
+                <div class="value" id="savedPercent">-</div>
+              </div>
+            </div>
 
-<label class="dropzone" id="dropzone" for="fileInput">
-  <h2>Sube tu PDF</h2>
-  <p id="dropzoneText">Hasta 200MB</p>
-</label>
+            <div class="panel account-panel" id="accountPanel">
+              <div class="row">
+                <div>
+                  <div class="panel-mini-label">Estado de cuenta</div>
+                  <div class="account-plan-line">
+                    <span id="planBadge" class="account-badge">Invitado</span>
+                  </div>
+                  <div class="muted account-help" id="accountHelp">
+                    Sin login: 200 MB · Cuenta gratis: 400 MB · Pro: ilimitado
+                  </div>
+                </div>
 
-<input id="fileInput" type="file" accept="application/pdf" hidden />
+                <div class="account-cta">
+                  <button id="buyProBtn" class="btn btn-gold" type="button">Hazte PRO</button>
+                </div>
+              </div>
+            </div>
 
-<div class="panel" id="filePanel" style="display:none;">
-  <div class="row">
-    <div>
-      <div id="fileName"></div>
-      <div id="fileMeta" class="muted"></div>
+            <div class="panel controls">
+              <button class="accordion-toggle accordion-toggle-panel" id="presetAccordionBtn" type="button" aria-expanded="false">
+                <span>Presets</span>
+                <span class="accordion-chevron" id="presetAccordionChevron" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </button>
+
+              <div class="accordion-content hidden" id="presetAccordionContent">
+                <div class="field">
+                  <label for="preset">
+                    Preset
+                    <span class="label-pro">(Pro)</span>
+                  </label>
+                  <div class="select-lock" id="presetWrap">
+                    <select id="preset" class="select">
+                      <option value="light">Ligero</option>
+                      <option value="optimal" selected>Óptimo</option>
+                      <option value="extreme">Extremo</option>
+                    </select>
+                  </div>
+                  <div class="hint">En la versión gratis se usa automáticamente el ajuste recomendado: 1.5x y 90%.</div>
+                </div>
+
+                <div class="field">
+                  <label for="scaleRange">
+                    Resolución de render
+                    <span class="label-pro">(Pro)</span>
+                  </label>
+                  <div class="range-wrap locked" id="scaleWrap">
+                    <input id="scaleRange" class="range" type="range" min="0.6" max="2" step="0.1" value="1.5" />
+                    <div class="range-value" id="scaleValue">1.5x</div>
+                  </div>
+                  <div class="hint">Más alto = mejor calidad, más peso.</div>
+                </div>
+
+                <div class="field">
+                  <label for="qualityRange">
+                    Calidad JPEG
+                    <span class="label-pro">(Pro)</span>
+                  </label>
+                  <div class="range-wrap locked" id="qualityWrap">
+                    <input id="qualityRange" class="range" type="range" min="0.35" max="0.95" step="0.05" value="0.9" />
+                    <div class="range-value" id="qualityValue">90%</div>
+                  </div>
+                  <div class="hint">Más alto = mejor calidad visual, menos compresión.</div>
+                </div>
+
+                <div class="hint pro-hint">
+                  🔒 Puedes ver los presets sin cuenta, pero los controles avanzados solo están disponibles para usuarios Pro.
+                </div>
+              </div>
+
+              <div class="hint">
+                Este compresor convierte las páginas del PDF en imágenes para reducir su tamaño. Ideal para PDFs escaneados o con muchas imágenes.
+              </div>
+
+              <button class="btn btn-primary" id="compressBtn" type="button" disabled>Comprimir PDF</button>
+              <a id="downloadBtn" class="btn btn-secondary hidden" download="pdf-comprimido.pdf">Descargar PDF comprimido</a>
+            </div>
+
+            <div class="progress-wrap hidden" id="progressWrap">
+              <div class="message" id="progressText">Preparando...</div>
+              <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            </div>
+
+            <div class="message" id="message"></div>
+          </div>
+        </section>
+
+        <section class="page">
+          <h2 class="section-title">Preguntas frecuentes</h2>
+          <p class="faq-intro">
+            Todo lo importante sobre cómo funciona Compresso, qué incluye la versión gratis y qué desbloquea Pro.
+          </p>
+
+          <div class="faq-list">
+            <div class="faq-item">
+              <h3>¿Mis archivos se suben a un servidor?</h3>
+              <p>No. Todo el procesamiento ocurre localmente en tu navegador.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Cuál es el límite si no inicio sesión?</h3>
+              <p>Sin iniciar sesión puedes comprimir archivos PDF de hasta 200 MB por vez.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Cuál es el límite con una cuenta gratuita?</h3>
+              <p>Con una cuenta gratuita registrada puedes comprimir archivos PDF de hasta 400 MB por vez.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Qué desbloquea la versión Pro?</h3>
+              <p>Compresso Pro desbloquea presets, control manual de resolución y calidad, compresión de varios archivos y sin límite de tamaño.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Se mantiene el texto seleccionable?</h3>
+              <p>No siempre. Esta versión convierte las páginas a imagen para comprimir, por eso funciona mejor con PDFs visuales o escaneados.</p>
+            </div>
+
+            <div class="faq-item">
+              <h3>¿Por qué a veces el PDF no reduce tanto?</h3>
+              <p>Algunos PDFs ya vienen optimizados o tienen poco contenido visual para comprimir. En esos casos la reducción puede ser menor.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page pro-page">
+          <div class="pro-badge">⭐ Compresso Pro</div>
+          <h2 class="pro-title">Desbloquea el modo avanzado y comprime sin límites</h2>
+          <p class="pro-lead">
+            Si trabajas con PDFs pesados, muchos archivos o necesitas mayor control sobre la compresión,
+            Compresso Pro está diseñado para ti.
+          </p>
+
+          <div class="pro-grid">
+            <div class="pro-card">
+              <h3>Control avanzado</h3>
+              <p>Ajusta preset, resolución y calidad manualmente para encontrar el equilibrio ideal entre peso y nitidez.</p>
+            </div>
+
+            <div class="pro-card">
+              <h3>Varios archivos a la vez</h3>
+              <p>Ahorra tiempo comprimiendo múltiples PDFs en una sola sesión, sin repetir el proceso uno por uno.</p>
+            </div>
+
+            <div class="pro-card">
+              <h3>Sin límite de tamaño</h3>
+              <p>Procesa archivos grandes cuando realmente lo necesites, sin restricciones de peso.</p>
+            </div>
+          </div>
+
+          <div class="pro-highlight">
+            <div class="pro-box">
+              <h3>¿Por qué elegir Pro?</h3>
+              <div class="pro-list">
+                <div>Desbloqueas todo el panel de ajustes avanzados.</div>
+                <div>Puedes comprimir varios archivos al mismo tiempo.</div>
+                <div>Procesas PDFs sin límite de tamaño.</div>
+                <div>Ideal para oficinas, estudiantes, despachos y usuarios intensivos.</div>
+              </div>
+            </div>
+
+            <div class="price-box">
+              <h3>Sube de nivel</h3>
+              <div class="price-tag">Pro</div>
+              <div class="price-sub">
+                Más control, más capacidad y una experiencia pensada para usuarios que trabajan en serio con PDFs.
+              </div>
+              <div class="pro-cta">
+                <button id="buyProBtnPage" class="btn btn-gold" type="button">Hazte PRO</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page account-page">
+          <div class="account-page-header">
+            <div class="pro-badge">Cuenta</div>
+            <h2 class="pro-title">Administra tu cuenta</h2>
+            <p class="pro-lead" id="accountPageLead">
+              Inicia sesión o crea una cuenta gratis para aumentar tu límite a 400 MB.
+            </p>
+          </div>
+
+          <div id="accountGuestView" class="account-auth-wrapper">
+            <div class="account-auth-card account-auth-main">
+              <div class="auth-card-badge">Compresso Account</div>
+
+              <h3>Accede a tu cuenta</h3>
+              <p>
+                Entra para aumentar tu límite, administrar tu suscripción y desbloquear funciones avanzadas.
+              </p>
+
+              <div class="account-auth-tabs">
+                <button class="account-auth-tab active" id="accountLoginTab" type="button">Iniciar sesión</button>
+                <button class="account-auth-tab" id="accountRegisterTab" type="button">Crear cuenta</button>
+              </div>
+
+              <form id="loginForm" class="auth-form">
+                <input id="loginEmail" class="select" type="email" placeholder="Correo electrónico" required />
+                <input id="loginPassword" class="select" type="password" placeholder="Contraseña" required />
+                <button class="btn btn-primary" type="submit">Entrar</button>
+              </form>
+
+              <form id="registerForm" class="auth-form hidden">
+                <input id="registerEmail" class="select" type="email" placeholder="Correo electrónico" required />
+                <input id="registerPassword" class="select" type="password" placeholder="Crea una contraseña" required />
+                <button class="btn btn-primary" type="submit">Crear cuenta gratis</button>
+              </form>
+
+              <div id="authMessage" class="message"></div>
+            </div>
+
+            <div class="account-auth-side">
+              <div class="account-auth-side-card">
+                <div class="side-stat">200 MB</div>
+                <p>Sin iniciar sesión</p>
+              </div>
+
+              <div class="account-auth-side-card highlight">
+                <div class="side-stat">400 MB</div>
+                <p>Con cuenta gratis</p>
+              </div>
+
+              <div class="account-auth-side-card gold">
+                <div class="side-stat">∞</div>
+                <p>Con Compresso Pro</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="accountUserView" class="account-dashboard hidden">
+            <div class="panel account-dashboard-card">
+              <div>
+                <div class="panel-mini-label">Correo electrónico</div>
+                <div class="account-big-text" id="accountEmail">-</div>
+              </div>
+            </div>
+
+            <div class="panel account-dashboard-card">
+              <div>
+                <div class="panel-mini-label">Suscripción</div>
+                <div class="account-big-text" id="accountPlan">Gratis</div>
+                <div class="muted" id="accountPlanDescription">Límite actual: 400 MB por archivo.</div>
+              </div>
+
+              <button id="accountUpgradeBtn" class="btn btn-gold" type="button">Hazte PRO</button>
+            </div>
+
+            <div class="panel account-dashboard-card">
+              <div>
+                <div class="panel-mini-label">Contraseña</div>
+                <div class="muted">Envía un enlace de recuperación a tu correo para cambiar tu contraseña.</div>
+              </div>
+
+              <button id="resetPasswordBtn" class="btn btn-secondary" type="button">Cambiar contraseña</button>
+            </div>
+
+            <div class="panel account-dashboard-card">
+              <div>
+                <div class="panel-mini-label">Sesión</div>
+                <div class="muted">Cierra sesión en este dispositivo.</div>
+              </div>
+
+              <button id="accountLogoutBtn" class="btn btn-secondary" type="button">Cerrar sesión</button>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
-    <button id="clearBtn" class="btn btn-secondary">Quitar</button>
   </div>
-</div>
 
-<div class="panel account-panel">
-  <div class="row">
-    <div>
-      <div class="panel-mini-label">Cuenta</div>
-      <span id="planBadge" class="account-badge">Invitado</span>
-      <div id="accountHelp" class="muted">200MB gratis</div>
+  <div class="modal-backdrop hidden" id="limitModal">
+    <div class="modal">
+      <div class="modal-badge">⭐ Límite de versión gratis</div>
+      <h3 id="limitTitle">Tu archivo supera el límite actual</h3>
+      <p id="limitDescription">Este archivo supera el límite disponible para tu plan actual.</p>
+      <div class="modal-actions" id="limitActions"></div>
     </div>
-
-    <button id="buyProBtn" class="btn btn-gold">Hazte PRO</button>
   </div>
-</div>
-
-<div class="panel controls">
-
-<button id="presetAccordionBtn" class="accordion-toggle">
-  Presets
-  <span class="accordion-chevron">⌄</span>
-</button>
-
-<div id="presetAccordionContent" class="accordion-content hidden">
-
-<div class="field">
-  <label>Preset (Pro)</label>
-  <select id="preset" class="select">
-    <option>Ligero</option>
-    <option selected>Óptimo</option>
-    <option>Extremo</option>
-  </select>
-</div>
-
-<div class="field">
-  <label>Resolución (Pro)</label>
-  <input id="scaleRange" type="range" />
-</div>
-
-<div class="field">
-  <label>Calidad (Pro)</label>
-  <input id="qualityRange" type="range" />
-</div>
-
-</div>
-
-<button id="compressBtn" class="btn btn-primary" disabled>
-  Comprimir PDF
-</button>
-
-<a id="downloadBtn" class="btn btn-secondary hidden">Descargar</a>
-
-</div>
-
-</div>
-</section>
-
-<!-- ================= FAQ ================= -->
-<section class="page">
-<h2>FAQs</h2>
-<p>Información básica del producto...</p>
-</section>
-
-<!-- ================= PRO ================= -->
-<section class="page">
-<h2>Compresso Pro</h2>
-<button id="buyProBtnPage" class="btn btn-gold">
-  Hazte PRO
-</button>
-</section>
-
-<!-- ================= CUENTA ================= -->
-<section class="page account-page">
-
-<div class="account-page-header">
-  <div class="pro-badge">Cuenta</div>
-
-  <h2 class="pro-title">Administra tu cuenta</h2>
-
-  <p class="pro-lead" id="accountPageLead">
-    Inicia sesión o crea una cuenta gratis para aumentar tu límite a 400 MB.
-  </p>
-</div>
-
-<!-- LOGIN / REGISTER -->
-<div id="accountGuestView" class="account-auth-wrapper">
-
-<div class="account-auth-card account-auth-main">
-
-<div class="auth-card-badge">Compresso Account</div>
-
-<h3>Accede a tu cuenta</h3>
-<p>
-Entra para aumentar tu límite, administrar tu suscripción y desbloquear funciones avanzadas.
-</p>
-
-<div class="account-auth-tabs">
-<button class="account-auth-tab active" id="accountLoginTab">Iniciar sesión</button>
-<button class="account-auth-tab" id="accountRegisterTab">Crear cuenta</button>
-</div>
-
-<form id="loginForm" class="auth-form">
-<input id="loginEmail" class="select" type="email" placeholder="Correo electrónico" required />
-<input id="loginPassword" class="select" type="password" placeholder="Contraseña" required />
-<button class="btn btn-primary">Entrar</button>
-</form>
-
-<form id="registerForm" class="auth-form hidden">
-<input id="registerEmail" class="select" type="email" placeholder="Correo electrónico" required />
-<input id="registerPassword" class="select" type="password" placeholder="Crea una contraseña" required />
-<button class="btn btn-primary">Crear cuenta gratis</button>
-</form>
-
-<div id="authMessage" class="message"></div>
-
-</div>
-
-<!-- BENEFICIOS -->
-<div class="account-auth-side">
-
-<div class="account-auth-side-card">
-  <div class="side-stat">200 MB</div>
-  <p>Sin iniciar sesión</p>
-</div>
-
-<div class="account-auth-side-card highlight">
-  <div class="side-stat">400 MB</div>
-  <p>Con cuenta gratis</p>
-</div>
-
-<div class="account-auth-side-card gold">
-  <div class="side-stat">∞</div>
-  <p>Con Compresso Pro</p>
-</div>
-
-</div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="accountUserView" class="account-dashboard hidden">
-
-<div class="panel account-dashboard-card">
-  <div>
-    <div class="panel-mini-label">Correo electrónico</div>
-    <div class="account-big-text" id="accountEmail">-</div>
-  </div>
-</div>
-
-<div class="panel account-dashboard-card">
-  <div>
-    <div class="panel-mini-label">Suscripción</div>
-    <div class="account-big-text" id="accountPlan">Gratis</div>
-    <div class="muted" id="accountPlanDescription">400MB por archivo</div>
-  </div>
-
-  <button id="accountUpgradeBtn" class="btn btn-gold">Hazte PRO</button>
-</div>
-
-<div class="panel account-dashboard-card">
-  <div>
-    <div class="panel-mini-label">Contraseña</div>
-    <div class="muted">Recibe un link para cambiarla</div>
-  </div>
-
-  <button id="resetPasswordBtn" class="btn btn-secondary">Cambiar contraseña</button>
-</div>
-
-<div class="panel account-dashboard-card">
-  <div>
-    <div class="panel-mini-label">Sesión</div>
-    <div class="muted">Cerrar sesión en este dispositivo</div>
-  </div>
-
-  <button id="accountLogoutBtn" class="btn btn-secondary">Cerrar sesión</button>
-</div>
-
-</div>
-
-</section>
-
-</div>
-</div>
-</div>
-
 </body>
 </html>
