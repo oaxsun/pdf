@@ -7,26 +7,37 @@ const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansProBtn = document.getElementById("plansProBtn");
 
 export function openPlansModal() {
+  if (!plansModal) {
+    console.warn("No existe #plansModal en el HTML.");
+    return;
+  }
   plansModal.classList.remove("hidden");
 }
 
 export function closePlansModalFn() {
-  plansModal.classList.add("hidden");
+  plansModal?.classList.add("hidden");
 }
 
 async function goToCheckout() {
   const plan = window.currentUserPlan || "guest";
 
   if (plan === "guest") {
+    closePlansModalFn();
     document.dispatchEvent(new CustomEvent("open-auth-modal", {
       detail: { mode: "register" }
     }));
     return;
   }
 
+  if (!APP_CONFIG.CREATE_CHECKOUT_FUNCTION_URL) {
+    alert("Falta configurar CREATE_CHECKOUT_FUNCTION_URL en config.js para activar pagos.");
+    return;
+  }
+
   const triggerButtons = [
     document.getElementById("buyProBtn"),
     document.getElementById("buyProBtnPage"),
+    document.getElementById("accountUpgradeBtn"),
     plansProBtn
   ];
 
@@ -81,6 +92,9 @@ export async function startCheckout() {
 
 document.getElementById("buyProBtn")?.addEventListener("click", startCheckout);
 document.getElementById("buyProBtnPage")?.addEventListener("click", startCheckout);
+document.getElementById("accountUpgradeBtn")?.addEventListener("click", startCheckout);
+
+document.addEventListener("open-plans-modal", startCheckout);
 
 closePlansModal?.addEventListener("click", closePlansModalFn);
 
@@ -98,6 +112,5 @@ plansGuestLoginBtn?.addEventListener("click", () => {
 });
 
 plansProBtn?.addEventListener("click", async () => {
-  closePlansModalFn();
   await goToCheckout();
 });

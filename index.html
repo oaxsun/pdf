@@ -362,6 +362,33 @@
     </div>
   </div>
 
+  <!-- COMPARATIVA DE PLANES -->
+  <div id="plansModal" class="modal-backdrop hidden">
+    <div class="modal plans-modal">
+      <div class="modal-badge">Comparativa de planes</div>
+      <h3 class="plans-title">Elige el plan que mejor se adapta a ti</h3>
+      <p class="plans-subtitle">Empieza como invitado, crea una cuenta gratis o desbloquea Pro para trabajar sin límites.</p>
+      <div class="plans-comparison">
+        <div class="plan-column">
+          <div class="plan-column-head"><div class="plan-column-name">Invitado</div><div class="plan-column-price">200 MB</div></div>
+          <div class="plan-column-body"><div class="plan-feature">Uso inmediato sin registrarte</div><div class="plan-feature">1 archivo por vez</div><div class="plan-feature">Compresión básica</div></div>
+          <div class="plan-column-footer"><button id="plansGuestLoginBtn" class="btn btn-secondary" type="button">Ingresar</button></div>
+        </div>
+        <div class="plan-column plan-column-free">
+          <div class="plan-column-head"><div class="plan-column-name">Free</div><div class="plan-column-price">400 MB</div></div>
+          <div class="plan-column-body"><div class="plan-feature">Cuenta gratuita</div><div class="plan-feature">Más capacidad por archivo</div><div class="plan-feature">Ideal para uso frecuente</div></div>
+          <div class="plan-column-footer"><div class="plan-current-pill">Incluido al registrarte</div></div>
+        </div>
+        <div class="plan-column plan-column-pro">
+          <div class="plan-column-head"><div class="plan-column-name">Pro</div><div class="plan-column-price">Ilimitado</div></div>
+          <div class="plan-column-body"><div class="plan-feature">Sin límite de tamaño</div><div class="plan-feature">Controles avanzados</div><div class="plan-feature">Mejor flujo para uso intensivo</div></div>
+          <div class="plan-column-footer"><button id="plansProBtn" class="btn btn-gold" type="button">Hazte PRO</button></div>
+        </div>
+      </div>
+      <div class="modal-actions"><button id="closePlansModal" class="btn modal-close" type="button">Cerrar</button></div>
+    </div>
+  </div>
+
   <div class="modal-backdrop hidden" id="limitModal">
     <div class="modal">
       <div class="modal-badge">⭐ Límite de versión gratis</div>

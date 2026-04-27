@@ -978,3 +978,82 @@ body {
     flex-direction: column;
   }
 }
+
+/* Login compacto */
+.compact-auth {
+  grid-template-columns: minmax(320px, 460px) 1fr;
+  align-items: start;
+}
+
+.compact-auth-card {
+  max-width: 460px;
+  padding: 22px;
+}
+
+.compact-auth-card h3 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.compact-auth-card p {
+  margin-bottom: 16px;
+}
+
+.compact-form {
+  max-width: 360px;
+  gap: 10px;
+}
+
+.compact-input {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.compact-btn {
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.auth-switch {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.auth-switch span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.auth-switch button {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.auth-switch button:hover {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(20,184,166,.22);
+}
+
+@media (max-width: 820px) {
+  .compact-auth {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-auth-card,
+  .compact-form {
+    max-width: 100%;
+  }
+}
