@@ -1057,3 +1057,173 @@ body {
     max-width: 100%;
   }
 }
+
+/* Account UX refinements */
+.account-page-header-compact {
+  max-width: 720px;
+  margin: 0 auto 22px;
+  text-align: center;
+}
+
+.account-auth-centered {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.account-auth-centered .compact-auth-card {
+  width: min(100%, 420px);
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 22px;
+  text-align: left;
+}
+
+.account-auth-centered .auth-card-badge {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.account-auth-centered #authPanelTitle,
+.account-auth-centered #authPanelSubtitle {
+  text-align: center;
+}
+
+.account-auth-centered .compact-form {
+  width: min(100%, 320px);
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.account-auth-centered .compact-input {
+  min-height: 40px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.account-auth-centered .compact-btn {
+  min-height: 40px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.account-auth-centered .auth-switch {
+  margin-top: 10px;
+}
+
+.auth-message {
+  width: min(100%, 320px);
+  margin: 12px auto 0;
+  text-align: center;
+}
+
+.account-dashboard {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  gap: 14px;
+}
+
+.account-summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(20,184,166,.22);
+  background:
+    radial-gradient(circle at top right, rgba(20,184,166,.16), transparent 35%),
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+}
+
+.account-kicker {
+  color: #99f6e4;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+
+.account-summary-card h3 {
+  margin: 0 0 8px;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.account-summary-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.account-settings-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.account-setting-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+
+.setting-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20,184,166,.12);
+  border: 1px solid rgba(20,184,166,.20);
+  color: #99f6e4;
+  font-weight: 900;
+}
+
+.setting-content {
+  min-width: 0;
+}
+
+.account-action-btn {
+  width: auto;
+  min-width: 130px;
+  padding: 11px 14px;
+}
+
+.account-setting-card-danger .setting-icon {
+  background: rgba(245,158,11,.10);
+  border-color: rgba(245,158,11,.20);
+  color: #fde68a;
+}
+
+@media (max-width: 820px) {
+  .account-page-header-compact {
+    text-align: left;
+  }
+
+  .account-auth-centered .compact-auth-card,
+  .account-auth-centered .compact-form,
+  .auth-message {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .account-summary-card,
+  .account-setting-card {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .account-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .account-action-btn {
+    width: 100%;
+  }
+}

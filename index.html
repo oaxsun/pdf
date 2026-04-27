@@ -260,7 +260,7 @@
         </section>
 
         <section class="page account-page">
-          <div class="account-page-header">
+          <div class="account-page-header account-page-header-compact">
             <div class="pro-badge">Cuenta</div>
             <h2 class="pro-title">Administra tu cuenta</h2>
             <p class="pro-lead" id="accountPageLead">
@@ -268,7 +268,7 @@
             </p>
           </div>
 
-          <div id="accountGuestView" class="account-auth-wrapper compact-auth">
+          <div id="accountGuestView" class="account-auth-wrapper account-auth-centered">
             <div class="account-auth-card account-auth-main compact-auth-card">
               <div class="auth-card-badge">Compresso Account</div>
 
@@ -300,61 +300,46 @@
                 </div>
               </form>
 
-              <div id="authMessage" class="message"></div>
-            </div>
-
-            <div class="account-auth-side">
-              <div class="account-auth-side-card">
-                <div class="side-stat">200 MB</div>
-                <p>Sin iniciar sesión</p>
-              </div>
-
-              <div class="account-auth-side-card highlight">
-                <div class="side-stat">400 MB</div>
-                <p>Con cuenta gratis</p>
-              </div>
-
-              <div class="account-auth-side-card gold">
-                <div class="side-stat">∞</div>
-                <p>Con Compresso Pro</p>
-              </div>
+              <div id="authMessage" class="message auth-message"></div>
             </div>
           </div>
 
           <div id="accountUserView" class="account-dashboard hidden">
-            <div class="panel account-dashboard-card">
+            <div class="account-summary-card">
               <div>
-                <div class="panel-mini-label">Correo electrónico</div>
-                <div class="account-big-text" id="accountEmail">-</div>
+                <div class="account-kicker">Tu cuenta</div>
+                <h3 id="accountPlan">Gratis</h3>
+                <p id="accountPlanDescription">Límite actual: 400 MB por archivo.</p>
               </div>
-            </div>
-
-            <div class="panel account-dashboard-card">
-              <div>
-                <div class="panel-mini-label">Suscripción</div>
-                <div class="account-big-text" id="accountPlan">Gratis</div>
-                <div class="muted" id="accountPlanDescription">Límite actual: 400 MB por archivo.</div>
-              </div>
-
               <button id="accountUpgradeBtn" class="btn btn-gold" type="button">Hazte PRO</button>
             </div>
 
-            <div class="panel account-dashboard-card">
-              <div>
-                <div class="panel-mini-label">Contraseña</div>
-                <div class="muted">Envía un enlace de recuperación a tu correo para cambiar tu contraseña.</div>
+            <div class="account-settings-grid">
+              <div class="panel account-setting-card">
+                <div class="setting-icon">@</div>
+                <div>
+                  <div class="panel-mini-label">Correo electrónico</div>
+                  <div class="account-big-text" id="accountEmail">-</div>
+                </div>
               </div>
 
-              <button id="resetPasswordBtn" class="btn btn-secondary" type="button">Cambiar contraseña</button>
-            </div>
-
-            <div class="panel account-dashboard-card">
-              <div>
-                <div class="panel-mini-label">Sesión</div>
-                <div class="muted">Cierra sesión en este dispositivo.</div>
+              <div class="panel account-setting-card">
+                <div class="setting-icon">🔐</div>
+                <div class="setting-content">
+                  <div class="panel-mini-label">Contraseña</div>
+                  <div class="muted">Recibe un enlace seguro para cambiar tu contraseña.</div>
+                </div>
+                <button id="resetPasswordBtn" class="btn btn-secondary account-action-btn" type="button">Cambiar</button>
               </div>
 
-              <button id="accountLogoutBtn" class="btn btn-secondary" type="button">Cerrar sesión</button>
+              <div class="panel account-setting-card account-setting-card-danger">
+                <div class="setting-icon">↩</div>
+                <div class="setting-content">
+                  <div class="panel-mini-label">Sesión</div>
+                  <div class="muted">Cierra sesión en este dispositivo.</div>
+                </div>
+                <button id="accountLogoutBtn" class="btn btn-secondary account-action-btn" type="button">Cerrar sesión</button>
+              </div>
             </div>
           </div>
         </section>

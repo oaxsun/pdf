@@ -63,6 +63,11 @@ function goToAccountTab() {
   accountNavBtn?.click();
 }
 
+function goToHomeTab() {
+  const homeTab = document.querySelector(".nav-link[data-tab=\"0\"]");
+  homeTab?.click();
+}
+
 function showLoginPanel() {
   loginForm?.classList.remove("hidden");
   registerForm?.classList.add("hidden");
@@ -247,7 +252,7 @@ loginForm?.addEventListener("submit", async (e) => {
     renderPlanUi(plan, profile);
 
     setAuthMessage("Sesión iniciada.");
-    goToAccountTab();
+    goToHomeTab();
   } catch (err) {
     console.error("Error login:", err);
     setAuthMessage(err.message || "No se pudo iniciar sesión.", true);
@@ -298,7 +303,7 @@ registerForm?.addEventListener("submit", async (e) => {
 
     setAuthMessage("Cuenta creada. Si Supabase pide confirmación, revisa tu correo.");
     await refreshSessionState();
-    goToAccountTab();
+    goToHomeTab();
   } catch (err) {
     console.error("Error registro:", err);
     setAuthMessage(err.message || "No se pudo crear la cuenta.", true);
@@ -308,10 +313,24 @@ registerForm?.addEventListener("submit", async (e) => {
 });
 
 accountLogoutBtn?.addEventListener("click", async () => {
-  await supabase.auth.signOut();
-  renderPlanUi("guest", null);
-  showLoginPanel();
-  goToAccountTab();
+  const originalText = accountLogoutBtn.textContent;
+  accountLogoutBtn.disabled = true;
+  accountLogoutBtn.textContent = "Cerrando...";
+
+  try {
+    const { error } = await withTimeout(supabase.auth.signOut(), 10000);
+    if (error) throw error;
+
+    renderPlanUi("guest", null);
+    showLoginPanel();
+    goToHomeTab();
+  } catch (err) {
+    console.error("Error logout:", err);
+    setAuthMessage(err.message || "No se pudo cerrar sesión.", true);
+  } finally {
+    accountLogoutBtn.disabled = false;
+    accountLogoutBtn.textContent = originalText || "Cerrar sesión";
+  }
 });
 
 resetPasswordBtn?.addEventListener("click", async () => {
