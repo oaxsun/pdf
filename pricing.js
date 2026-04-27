@@ -4,6 +4,7 @@ import { APP_CONFIG } from "./config.js";
 const plansModal = document.getElementById("plansModal");
 const closePlansModal = document.getElementById("closePlansModal");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
+const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
 const plansProBtn = document.getElementById("plansProBtn");
 
 export function openPlansModal() {
@@ -106,8 +107,12 @@ plansModal?.addEventListener("click", (e) => {
 
 plansGuestLoginBtn?.addEventListener("click", () => {
   closePlansModalFn();
+});
+
+plansFreeRegisterBtn?.addEventListener("click", () => {
+  closePlansModalFn();
   document.dispatchEvent(new CustomEvent("open-auth-modal", {
-    detail: { mode: "login" }
+    detail: { mode: "register" }
   }));
 });
 

@@ -1227,3 +1227,20 @@ body {
     width: 100%;
   }
 }
+
+/* Ajustes solicitados: login centrado y flujo principal en Crear cuenta */
+.account-auth-centered .compact-auth-card {
+  text-align: center;
+}
+
+.account-auth-centered .compact-form {
+  justify-self: center;
+}
+
+.account-auth-centered .compact-input,
+.account-auth-centered .compact-btn,
+.account-auth-centered .auth-switch button {
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}

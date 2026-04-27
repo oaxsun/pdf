@@ -91,6 +91,12 @@ function showRegisterPanel() {
 showCreateAccountBtn?.addEventListener("click", showRegisterPanel);
 showLoginAccountBtn?.addEventListener("click", showLoginPanel);
 
+accountNavBtn?.addEventListener("click", () => {
+  if ((window.currentUserPlan || "guest") === "guest") {
+    window.setTimeout(showRegisterPanel, 0);
+  }
+});
+
 function safeSetText(element, value) {
   if (element) element.textContent = value;
 }
@@ -128,6 +134,7 @@ function renderAccountPage(plan, profile) {
     accountGuestView?.classList.remove("hidden");
     accountUserView?.classList.add("hidden");
     safeSetText(accountPageLead, "Inicia sesión o crea una cuenta gratis para aumentar tu límite a 400 MB.");
+    showRegisterPanel();
     return;
   }
 
@@ -322,8 +329,8 @@ accountLogoutBtn?.addEventListener("click", async () => {
     if (error) throw error;
 
     renderPlanUi("guest", null);
-    showLoginPanel();
-    goToHomeTab();
+    showRegisterPanel();
+    goToAccountTab();
   } catch (err) {
     console.error("Error logout:", err);
     setAuthMessage(err.message || "No se pudo cerrar sesión.", true);
@@ -371,5 +378,5 @@ supabase.auth.onAuthStateChange(async (event) => {
   await refreshSessionState();
 });
 
-showLoginPanel();
+showRegisterPanel();
 await refreshSessionState();
