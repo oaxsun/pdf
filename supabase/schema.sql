@@ -1,3 +1,6 @@
+-- Tester Pro rule: users with @oaxsun.tech emails are created as Pro automatically.
+-- The frontend also treats @oaxsun.tech as Pro as a fallback for existing tester accounts.
+
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text unique,
@@ -40,7 +43,7 @@ set search_path = public
 as $$
 begin
   insert into public.profiles (id, email, plan)
-  values (new.id, new.email, 'free')
+  values (new.id, new.email, case when lower(new.email) like '%@oaxsun.tech' then 'pro' else 'free' end)
   on conflict (id) do nothing;
   return new;
 end;

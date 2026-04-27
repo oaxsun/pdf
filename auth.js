@@ -35,6 +35,23 @@ const accountPageLead = document.getElementById("accountPageLead");
 window.currentUserPlan = "guest";
 window.currentUser = null;
 
+const TESTER_PRO_DOMAIN = "@oaxsun.tech";
+const TESTER_PRO_EMAILS = ["hello@oaxsun.tech"];
+
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
+function isTesterProEmail(email) {
+  const normalized = normalizeEmail(email);
+  return TESTER_PRO_EMAILS.includes(normalized) || normalized.endsWith(TESTER_PRO_DOMAIN);
+}
+
+function getEffectivePlan(plan, email) {
+  if (isTesterProEmail(email)) return "pro";
+  return plan || "free";
+}
+
 let isRefreshingSession = false;
 
 function setAuthMessage(text, isError = false) {
@@ -144,10 +161,14 @@ function renderAccountPage(plan, profile) {
   safeSetText(accountEmail, profile?.email || "-");
   safeSetText(accountPlan, plan === "pro" ? "Pro" : "Gratis");
 
+  const isTester = isTesterProEmail(profile?.email);
+
   safeSetText(
     accountPlanDescription,
     plan === "pro"
-      ? "Compresión sin límite de tamaño y controles avanzados desbloqueados."
+      ? (isTester
+          ? "Cuenta tester Oaxsun · Pro activo sin método de pago."
+          : "Compresión sin límite de tamaño y controles avanzados desbloqueados.")
       : "Límite actual: 400 MB por archivo."
   );
 
@@ -167,30 +188,47 @@ async function ensureProfile(user) {
     .maybeSingle();
 
   if (data && !error) {
+    const email = data.email || user.email;
+    const effectivePlan = getEffectivePlan(data.plan || "free", email);
+
+    if (effectivePlan === "pro" && data.plan !== "pro") {
+      supabase
+        .from("profiles")
+        .update({ plan: "pro", email })
+        .eq("id", user.id)
+        .then(({ error: updateError }) => {
+          if (updateError) console.warn("No se pudo marcar tester como Pro:", updateError);
+        });
+    }
+
     return {
-      plan: data.plan || "free",
+      plan: effectivePlan,
       profile: {
         ...data,
-        email: data.email || user.email
+        email,
+        plan: effectivePlan
       }
     };
   }
 
-  console.warn("No se pudo leer profiles; usando fallback free.", error);
+  console.warn("No se pudo leer profiles; usando fallback según correo.", error);
+
+  const fallbackEmail = user.email;
+  const fallbackPlan = getEffectivePlan("free", fallbackEmail);
 
   try {
     await supabase
       .from("profiles")
-      .upsert({ id: user.id, email: user.email, plan: "free" }, { onConflict: "id" });
+      .upsert({ id: user.id, email: fallbackEmail, plan: fallbackPlan }, { onConflict: "id" });
   } catch (insertError) {
     console.warn("No se pudo crear/actualizar profiles desde frontend. Revisa RLS/trigger.", insertError);
   }
 
   return {
-    plan: "free",
+    plan: fallbackPlan,
     profile: {
-      email: user.email,
-      plan: "free"
+      email: fallbackEmail,
+      plan: fallbackPlan
     }
   };
 }
