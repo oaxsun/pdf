@@ -1320,3 +1320,32 @@ body {
     padding-bottom: 4px;
   }
 }
+
+/* Password reset / auth polish */
+.auth-text-button {
+  width: fit-content;
+  margin: 0 auto 4px;
+  border: 0;
+  background: transparent;
+  color: #99f6e4;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.auth-text-button:hover {
+  color: #ccfbf1;
+  text-decoration: underline;
+}
+
+#passwordResetView .compact-auth-card {
+  text-align: center;
+}
+
+#passwordResetView .compact-form {
+  width: min(100%, 320px);
+  max-width: 320px;
+  margin: 0 auto;
+}

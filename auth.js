@@ -32,6 +32,13 @@ const accountLogoutBtn = document.getElementById("accountLogoutBtn");
 const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 const accountPageLead = document.getElementById("accountPageLead");
 
+const passwordResetView = document.getElementById("passwordResetView");
+const passwordResetForm = document.getElementById("passwordResetForm");
+const newPassword = document.getElementById("newPassword");
+const newPasswordConfirm = document.getElementById("newPasswordConfirm");
+const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
+const cancelPasswordResetBtn = document.getElementById("cancelPasswordResetBtn");
+
 window.currentUserPlan = "guest";
 window.currentUser = null;
 
@@ -53,6 +60,44 @@ function getEffectivePlan(plan, email) {
 }
 
 let isRefreshingSession = false;
+const PASSWORD_CHANGE_COOLDOWN_MONTHS = 6;
+let isPasswordRecoveryFlow = false;
+
+function formatDateForUser(value) {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(value));
+  } catch (_) {
+    return new Date(value).toLocaleDateString();
+  }
+}
+
+function addMonths(date, months) {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+}
+
+function getNextPasswordChangeDate(lastChangeAt) {
+  if (!lastChangeAt) return null;
+  return addMonths(new Date(lastChangeAt), PASSWORD_CHANGE_COOLDOWN_MONTHS);
+}
+
+function canChangePassword(lastChangeAt) {
+  const next = getNextPasswordChangeDate(lastChangeAt);
+  return !next || Date.now() >= next.getTime();
+}
+
+function getFriendlyAuthError(error) {
+  const message = String(error?.message || error || "");
+  const lower = message.toLowerCase();
+
+  if (lower.includes("rate limit") || lower.includes("email rate limit") || lower.includes("too many")) {
+    return "Supabase limitó temporalmente los correos. Espera un rato o configura SMTP propio para evitar este límite.";
+  }
+
+  return message || "Ocurrió un error. Inténtalo de nuevo.";
+}
 
 function setAuthMessage(text, isError = false) {
   if (!authMessage) return;
@@ -86,6 +131,8 @@ function goToHomeTab() {
 }
 
 function showLoginPanel() {
+  passwordResetView?.classList.add("hidden");
+  accountGuestView?.classList.remove("hidden");
   loginForm?.classList.remove("hidden");
   registerForm?.classList.add("hidden");
 
@@ -96,12 +143,22 @@ function showLoginPanel() {
 }
 
 function showRegisterPanel() {
+  passwordResetView?.classList.add("hidden");
+  accountGuestView?.classList.remove("hidden");
   registerForm?.classList.remove("hidden");
   loginForm?.classList.add("hidden");
 
   if (authPanelTitle) authPanelTitle.textContent = "Crear cuenta";
   if (authPanelSubtitle) authPanelSubtitle.textContent = "Regístrate gratis y aumenta tu límite a 400 MB.";
 
+  setAuthMessage("");
+}
+
+function showPasswordResetPanel() {
+  accountGuestView?.classList.add("hidden");
+  accountUserView?.classList.add("hidden");
+  passwordResetView?.classList.remove("hidden");
+  safeSetText(accountPageLead, "Crea una nueva contraseña para tu cuenta.");
   setAuthMessage("");
 }
 
@@ -148,6 +205,7 @@ function renderPlanUi(plan, profile = null) {
 
 function renderAccountPage(plan, profile) {
   if (plan === "guest") {
+    passwordResetView?.classList.add("hidden");
     accountGuestView?.classList.remove("hidden");
     accountUserView?.classList.add("hidden");
     safeSetText(accountPageLead, "Inicia sesión o crea una cuenta gratis para aumentar tu límite a 400 MB.");
@@ -155,6 +213,7 @@ function renderAccountPage(plan, profile) {
     return;
   }
 
+  passwordResetView?.classList.add("hidden");
   accountGuestView?.classList.add("hidden");
   accountUserView?.classList.remove("hidden");
 
@@ -183,7 +242,7 @@ async function ensureProfile(user) {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("plan,email")
+    .select("plan,email,last_password_change_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -284,7 +343,7 @@ loginForm?.addEventListener("submit", async (e) => {
     );
 
     if (error) {
-      setAuthMessage(error.message || "No se pudo iniciar sesión.", true);
+      setAuthMessage(getFriendlyAuthError(error), true);
       return;
     }
 
@@ -337,7 +396,7 @@ registerForm?.addEventListener("submit", async (e) => {
     );
 
     if (error) {
-      setAuthMessage(error.message || "No se pudo crear la cuenta.", true);
+      setAuthMessage(getFriendlyAuthError(error), true);
       return;
     }
 
@@ -386,16 +445,135 @@ resetPasswordBtn?.addEventListener("click", async () => {
     return;
   }
 
+  if (window.currentUser?.last_password_change_at && !canChangePassword(window.currentUser.last_password_change_at)) {
+    const nextDate = getNextPasswordChangeDate(window.currentUser.last_password_change_at);
+    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 6 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
+    return;
+  }
+
+  resetPasswordBtn.disabled = true;
+  const originalText = resetPasswordBtn.textContent;
+  resetPasswordBtn.textContent = "Enviando...";
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin
+    redirectTo: `${window.location.origin}?reset-password=1`
   });
 
+  resetPasswordBtn.disabled = false;
+  resetPasswordBtn.textContent = originalText || "Cambiar";
+
   if (error) {
-    setAuthMessage(error.message, true);
+    setAuthMessage(getFriendlyAuthError(error), true);
     return;
   }
 
   setAuthMessage("Te enviamos un enlace para cambiar tu contraseña.");
+});
+
+forgotPasswordBtn?.addEventListener("click", async () => {
+  const email = loginEmail?.value.trim();
+
+  if (!email) {
+    setAuthMessage("Escribe tu correo y luego presiona ‘Olvidaste tu contraseña’. Busca el enlace en tu email.", true);
+    loginEmail?.focus();
+    return;
+  }
+
+  forgotPasswordBtn.disabled = true;
+  const originalText = forgotPasswordBtn.textContent;
+  forgotPasswordBtn.textContent = "Enviando enlace...";
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}?reset-password=1`
+  });
+
+  forgotPasswordBtn.disabled = false;
+  forgotPasswordBtn.textContent = originalText || "¿Olvidaste tu contraseña?";
+
+  if (error) {
+    setAuthMessage(getFriendlyAuthError(error), true);
+    return;
+  }
+
+  setAuthMessage("Te enviamos un enlace para crear una nueva contraseña. Revisa tu correo.");
+});
+
+passwordResetForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const password = newPassword?.value;
+  const confirm = newPasswordConfirm?.value;
+
+  if (!password || !confirm) {
+    setAuthMessage("Completa ambos campos.", true);
+    return;
+  }
+
+  if (password !== confirm) {
+    setAuthMessage("Las contraseñas no coinciden.", true);
+    return;
+  }
+
+  if (password.length < 6) {
+    setAuthMessage("La contraseña debe tener al menos 6 caracteres.", true);
+    return;
+  }
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    setAuthMessage("Tu enlace de recuperación expiró o no es válido. Solicita otro enlace.", true);
+    return;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("last_password_change_at,email,plan")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.last_password_change_at && !canChangePassword(profile.last_password_change_at)) {
+    const nextDate = getNextPasswordChangeDate(profile.last_password_change_at);
+    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 6 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
+    return;
+  }
+
+  setSubmitState(passwordResetForm, true, "Actualizando...", "Actualizar contraseña");
+  setAuthMessage("Actualizando contraseña...");
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) {
+      setAuthMessage(getFriendlyAuthError(error), true);
+      return;
+    }
+
+    await supabase
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        email: user.email,
+        plan: getEffectivePlan(profile?.plan || "free", user.email),
+        last_password_change_at: new Date().toISOString()
+      }, { onConflict: "id" });
+
+    const { plan, profile: ensuredProfile } = await ensureProfile(user);
+    renderPlanUi(plan, ensuredProfile);
+    setAuthMessage("Contraseña actualizada correctamente.");
+    goToAccountTab();
+  } catch (err) {
+    console.error("Error actualizando contraseña:", err);
+    setAuthMessage(getFriendlyAuthError(err), true);
+  } finally {
+    setSubmitState(passwordResetForm, false, "Actualizando...", "Actualizar contraseña");
+  }
+});
+
+cancelPasswordResetBtn?.addEventListener("click", async () => {
+  isPasswordRecoveryFlow = false;
+  await refreshSessionState();
+  goToAccountTab();
 });
 
 accountUpgradeBtn?.addEventListener("click", () => {
@@ -412,9 +590,24 @@ document.addEventListener("open-auth-modal", (event) => {
 });
 
 supabase.auth.onAuthStateChange(async (event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    isPasswordRecoveryFlow = true;
+    goToAccountTab();
+    showPasswordResetPanel();
+    return;
+  }
+
   if (event === "INITIAL_SESSION") return;
+  if (isPasswordRecoveryFlow) return;
   await refreshSessionState();
 });
 
-showRegisterPanel();
-await refreshSessionState();
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("reset-password") === "1") {
+  isPasswordRecoveryFlow = true;
+  goToAccountTab();
+  showPasswordResetPanel();
+} else {
+  showRegisterPanel();
+  await refreshSessionState();
+}
