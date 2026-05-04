@@ -1,4 +1,28 @@
-/* ONLY UPDATED PART FOR PASSWORD INPUT */
+/* ================= BASE ================= */
+
+:root {
+  --bg: #020617;
+  --panel: rgba(15, 23, 42, 0.9);
+  --panel-2: #0f172a;
+  --border: rgba(255,255,255,.08);
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #14b8a6;
+  --accent-2: #0d9488;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: var(--text);
+}
+
+/* ================= INPUT PASSWORD UX ================= */
 
 .input-password {
   position: relative;
@@ -17,11 +41,103 @@
   transform: translateY(-50%);
   cursor: pointer;
   font-size: 16px;
-  color: #94a3b8;
+  color: var(--muted);
   user-select: none;
   transition: 0.2s ease;
 }
 
 .toggle-password:hover {
-  color: #e2e8f0;
+  color: var(--text);
+}
+
+/* ================= INPUTS ================= */
+
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #09111f;
+  color: var(--text);
+  outline: none;
+  transition: 0.2s;
+}
+
+.select:focus {
+  border-color: var(--accent);
+}
+
+/* ================= BOTONES ================= */
+
+.btn {
+  border-radius: 12px;
+  padding: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #042f2e;
+}
+
+.btn-primary:hover {
+  background: var(--accent-2);
+}
+
+.btn-secondary {
+  background: #09111f;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #221302;
+}
+
+/* ================= LAYOUT ================= */
+
+.shell {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.panel {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================= LOGIN CENTRADO ================= */
+
+.compact-auth {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.compact-auth-card {
+  max-width: 420px;
+  width: 100%;
+  margin: auto;
+}
+
+/* ================= TEXT ================= */
+
+.muted {
+  color: var(--muted);
+}
+
+.message {
+  margin-top: 10px;
+  font-size: 14px;
 }
