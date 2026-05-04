@@ -60,7 +60,7 @@ function getEffectivePlan(plan, email) {
 }
 
 let isRefreshingSession = false;
-const PASSWORD_CHANGE_COOLDOWN_MONTHS = 6;
+const PASSWORD_CHANGE_COOLDOWN_MONTHS = 3;
 let isPasswordRecoveryFlow = false;
 
 function formatDateForUser(value) {
@@ -164,6 +164,23 @@ function showPasswordResetPanel() {
 
 showCreateAccountBtn?.addEventListener("click", showRegisterPanel);
 showLoginAccountBtn?.addEventListener("click", showLoginPanel);
+
+function setupPasswordVisibilityToggles() {
+  document.querySelectorAll(".password-field-toggle").forEach((button) => {
+    const targetId = button.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    button.addEventListener("click", () => {
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      button.setAttribute("aria-label", isHidden ? "Ocultar contraseña" : "Mostrar contraseña");
+      button.classList.toggle("is-visible", isHidden);
+    });
+  });
+}
+
+setupPasswordVisibilityToggles();
 
 accountNavBtn?.addEventListener("click", () => {
   if ((window.currentUserPlan || "guest") === "guest") {
@@ -447,7 +464,7 @@ resetPasswordBtn?.addEventListener("click", async () => {
 
   if (window.currentUser?.last_password_change_at && !canChangePassword(window.currentUser.last_password_change_at)) {
     const nextDate = getNextPasswordChangeDate(window.currentUser.last_password_change_at);
-    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 6 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
+    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 3 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
     return;
   }
 
@@ -534,7 +551,7 @@ passwordResetForm?.addEventListener("submit", async (e) => {
 
   if (profile?.last_password_change_at && !canChangePassword(profile.last_password_change_at)) {
     const nextDate = getNextPasswordChangeDate(profile.last_password_change_at);
-    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 6 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
+    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 3 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
     return;
   }
 

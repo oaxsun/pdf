@@ -1349,3 +1349,43 @@ body {
   max-width: 320px;
   margin: 0 auto;
 }
+
+
+/* Password visibility toggle */
+.password-field {
+  position: relative;
+  width: min(100%, 320px);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.password-field .compact-input {
+  width: 100%;
+  max-width: 100%;
+  padding-right: 44px;
+}
+
+.password-field-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.password-field-toggle:hover,
+.password-field-toggle.is-visible {
+  background: rgba(255,255,255,.06);
+  color: #99f6e4;
+}

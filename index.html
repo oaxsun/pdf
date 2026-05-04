@@ -279,7 +279,15 @@
 
               <form id="loginForm" class="auth-form compact-form">
                 <input id="loginEmail" class="select compact-input" type="email" placeholder="Correo electrónico" required />
-                <input id="loginPassword" class="select compact-input" type="password" placeholder="Contraseña" required />
+                <div class="password-field">
+                  <input id="loginPassword" class="select compact-input" type="password" placeholder="Contraseña" required />
+                  <button class="password-field-toggle" type="button" data-target="loginPassword" aria-label="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
                 <button class="btn btn-primary compact-btn" type="submit">Ingresar</button>
                 <button id="forgotPasswordBtn" class="auth-text-button" type="button">¿Olvidaste tu contraseña?</button>
 
@@ -291,8 +299,24 @@
 
               <form id="registerForm" class="auth-form compact-form hidden">
                 <input id="registerEmail" class="select compact-input" type="email" placeholder="Correo electrónico" required />
-                <input id="registerPassword" class="select compact-input" type="password" placeholder="Contraseña" required />
-                <input id="registerPasswordConfirm" class="select compact-input" type="password" placeholder="Confirmar contraseña" required />
+                <div class="password-field">
+                  <input id="registerPassword" class="select compact-input" type="password" placeholder="Contraseña" required />
+                  <button class="password-field-toggle" type="button" data-target="registerPassword" aria-label="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="password-field">
+                  <input id="registerPasswordConfirm" class="select compact-input" type="password" placeholder="Confirmar contraseña" required />
+                  <button class="password-field-toggle" type="button" data-target="registerPasswordConfirm" aria-label="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
                 <button class="btn btn-primary compact-btn" type="submit">Crear cuenta</button>
 
                 <div class="auth-switch">
@@ -310,11 +334,27 @@
               <div class="auth-card-badge">Seguridad</div>
 
               <h3>Crear nueva contraseña</h3>
-              <p>Escribe y confirma tu nueva contraseña. Por seguridad, solo puedes cambiarla una vez cada 6 meses.</p>
+              <p>Escribe y confirma tu nueva contraseña. Por seguridad, solo puedes cambiarla una vez cada 3 meses.</p>
 
               <form id="passwordResetForm" class="auth-form compact-form">
-                <input id="newPassword" class="select compact-input" type="password" placeholder="Nueva contraseña" required />
-                <input id="newPasswordConfirm" class="select compact-input" type="password" placeholder="Confirmar nueva contraseña" required />
+                <div class="password-field">
+                  <input id="newPassword" class="select compact-input" type="password" placeholder="Nueva contraseña" required />
+                  <button class="password-field-toggle" type="button" data-target="newPassword" aria-label="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="password-field">
+                  <input id="newPasswordConfirm" class="select compact-input" type="password" placeholder="Confirmar nueva contraseña" required />
+                  <button class="password-field-toggle" type="button" data-target="newPasswordConfirm" aria-label="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
                 <button class="btn btn-primary compact-btn" type="submit">Actualizar contraseña</button>
               </form>
 
