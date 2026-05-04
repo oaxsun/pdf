@@ -3,6 +3,7 @@ import { APP_CONFIG } from "./config.js";
 
 const plansModal = document.getElementById("plansModal");
 const closePlansModal = document.getElementById("closePlansModal");
+const closePlansModalTop = document.getElementById("closePlansModalTop");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
 const plansProBtn = document.getElementById("plansProBtn");
@@ -98,6 +99,7 @@ document.getElementById("accountUpgradeBtn")?.addEventListener("click", startChe
 document.addEventListener("open-plans-modal", startCheckout);
 
 closePlansModal?.addEventListener("click", closePlansModalFn);
+closePlansModalTop?.addEventListener("click", closePlansModalFn);
 
 plansModal?.addEventListener("click", (e) => {
   if (e.target === plansModal) {
