@@ -63,6 +63,69 @@ let isRefreshingSession = false;
 const PASSWORD_CHANGE_COOLDOWN_MONTHS = 3;
 let isPasswordRecoveryFlow = false;
 
+function getRecoveryRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}?reset-password=1`;
+}
+
+function getUrlHashParams() {
+  const hash = window.location.hash?.startsWith("#")
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+  return new URLSearchParams(hash || "");
+}
+
+function isRecoveryUrl() {
+  const query = new URLSearchParams(window.location.search);
+  const hash = getUrlHashParams();
+
+  return (
+    query.get("reset-password") === "1" ||
+    query.get("type") === "recovery" ||
+    hash.get("type") === "recovery" ||
+    hash.has("access_token") ||
+    query.has("code")
+  );
+}
+
+function cleanupRecoveryUrl() {
+  if (!isRecoveryUrl()) return;
+  window.history.replaceState({}, document.title, getRecoveryRedirectUrl());
+}
+
+async function establishRecoverySessionFromUrl() {
+  const query = new URLSearchParams(window.location.search);
+  const hash = getUrlHashParams();
+
+  try {
+    const code = query.get("code");
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) throw error;
+      cleanupRecoveryUrl();
+      return true;
+    }
+
+    const accessToken = hash.get("access_token");
+    const refreshToken = hash.get("refresh_token");
+
+    if (accessToken && refreshToken) {
+      const { error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      if (error) throw error;
+      cleanupRecoveryUrl();
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("No se pudo establecer la sesión de recuperación:", error);
+    setAuthMessage("El enlace de recuperación expiró o no es válido. Solicita otro enlace.", true);
+    return false;
+  }
+}
+
 function formatDateForUser(value) {
   if (!value) return "";
   try {
@@ -473,7 +536,7 @@ resetPasswordBtn?.addEventListener("click", async () => {
   resetPasswordBtn.textContent = "Enviando...";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}?reset-password=1`
+    redirectTo: getRecoveryRedirectUrl()
   });
 
   resetPasswordBtn.disabled = false;
@@ -501,7 +564,7 @@ forgotPasswordBtn?.addEventListener("click", async () => {
   forgotPasswordBtn.textContent = "Enviando enlace...";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}?reset-password=1`
+    redirectTo: getRecoveryRedirectUrl()
   });
 
   forgotPasswordBtn.disabled = false;
@@ -576,6 +639,8 @@ passwordResetForm?.addEventListener("submit", async (e) => {
       }, { onConflict: "id" });
 
     const { plan, profile: ensuredProfile } = await ensureProfile(user);
+    isPasswordRecoveryFlow = false;
+    window.history.replaceState({}, document.title, `${window.location.origin}${window.location.pathname}`);
     renderPlanUi(plan, ensuredProfile);
     setAuthMessage("Contraseña actualizada correctamente.");
     goToAccountTab();
@@ -589,6 +654,7 @@ passwordResetForm?.addEventListener("submit", async (e) => {
 
 cancelPasswordResetBtn?.addEventListener("click", async () => {
   isPasswordRecoveryFlow = false;
+  window.history.replaceState({}, document.title, `${window.location.origin}${window.location.pathname}`);
   await refreshSessionState();
   goToAccountTab();
 });
@@ -611,6 +677,7 @@ supabase.auth.onAuthStateChange(async (event) => {
     isPasswordRecoveryFlow = true;
     goToAccountTab();
     showPasswordResetPanel();
+    await establishRecoverySessionFromUrl();
     return;
   }
 
@@ -619,11 +686,11 @@ supabase.auth.onAuthStateChange(async (event) => {
   await refreshSessionState();
 });
 
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get("reset-password") === "1") {
+if (isRecoveryUrl()) {
   isPasswordRecoveryFlow = true;
   goToAccountTab();
   showPasswordResetPanel();
+  await establishRecoverySessionFromUrl();
 } else {
   showRegisterPanel();
   await refreshSessionState();
