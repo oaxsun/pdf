@@ -6,7 +6,14 @@ const closePlansModal = document.getElementById("closePlansModal");
 const closePlansModalTop = document.getElementById("closePlansModalTop");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
-const plansProBtn = document.getElementById("plansProBtn");
+const plansProMonthlyBtn = document.getElementById("plansProMonthlyBtn");
+const plansProYearlyBtn = document.getElementById("plansProYearlyBtn");
+const legacyPlansProBtn = document.getElementById("plansProBtn");
+
+const STRIPE_PRICE_IDS = {
+  monthly: APP_CONFIG.STRIPE_MONTHLY_PRICE_ID,
+  yearly: APP_CONFIG.STRIPE_YEARLY_PRICE_ID
+};
 
 export function openPlansModal() {
   if (!plansModal) {
@@ -20,7 +27,11 @@ export function closePlansModalFn() {
   plansModal?.classList.add("hidden");
 }
 
-async function goToCheckout() {
+function getPriceId(billingPeriod = "monthly") {
+  return billingPeriod === "yearly" ? STRIPE_PRICE_IDS.yearly : STRIPE_PRICE_IDS.monthly;
+}
+
+async function goToCheckout(billingPeriod = "monthly") {
   const plan = window.currentUserPlan || "guest";
 
   if (plan === "guest") {
@@ -36,16 +47,26 @@ async function goToCheckout() {
     return;
   }
 
+  const priceId = getPriceId(billingPeriod);
+
+  if (!priceId) {
+    alert("Falta configurar el Price ID de Stripe para este plan.");
+    return;
+  }
+
   const triggerButtons = [
     document.getElementById("buyProBtn"),
     document.getElementById("buyProBtnPage"),
     document.getElementById("accountUpgradeBtn"),
-    plansProBtn
+    plansProMonthlyBtn,
+    plansProYearlyBtn,
+    legacyPlansProBtn
   ];
 
   triggerButtons.forEach((btn) => {
     if (btn) {
       btn.disabled = true;
+      btn.dataset.originalText = btn.textContent;
       btn.textContent = "Redirigiendo...";
     }
   });
@@ -64,6 +85,8 @@ async function goToCheckout() {
         "Authorization": `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
+        billing_period: billingPeriod,
+        price_id: priceId,
         success_url: `${window.location.origin}/?checkout=success`,
         cancel_url: `${window.location.origin}/?checkout=cancel`
       })
@@ -82,7 +105,8 @@ async function goToCheckout() {
     triggerButtons.forEach((btn) => {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = "Hazte PRO";
+        btn.textContent = btn.dataset.originalText || "Hazte PRO";
+        delete btn.dataset.originalText;
       }
     });
   }
@@ -118,6 +142,14 @@ plansFreeRegisterBtn?.addEventListener("click", () => {
   }));
 });
 
-plansProBtn?.addEventListener("click", async () => {
-  await goToCheckout();
+legacyPlansProBtn?.addEventListener("click", async () => {
+  await goToCheckout("monthly");
+});
+
+plansProMonthlyBtn?.addEventListener("click", async () => {
+  await goToCheckout("monthly");
+});
+
+plansProYearlyBtn?.addEventListener("click", async () => {
+  await goToCheckout("yearly");
 });

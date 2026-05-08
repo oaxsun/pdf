@@ -6,6 +6,11 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
   apiVersion: "2024-04-10"
 });
 
+const STRIPE_PRICES = {
+  monthly: "price_1TUwUZK5nFoesXlkApbFtwEF",
+  yearly: "price_1TUwVYK5nFoesXlkLOslgwDx"
+};
+
 serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -37,6 +42,13 @@ serve(async (req) => {
     const body = await req.json();
     const success_url = body.success_url;
     const cancel_url = body.cancel_url;
+    const billingPeriod = body.billing_period === "yearly" ? "yearly" : "monthly";
+    const requestedPriceId = body.price_id;
+    const priceId = STRIPE_PRICES[billingPeriod as keyof typeof STRIPE_PRICES];
+
+    if (requestedPriceId && requestedPriceId !== priceId) {
+      return new Response(JSON.stringify({ error: "Price ID inválido" }), { status: 400 });
+    }
 
     let customerId = profile.stripe_customer_id;
 
@@ -61,14 +73,23 @@ serve(async (req) => {
       customer: customerId,
       line_items: [
         {
-          price: Deno.env.get("STRIPE_PRO_PRICE_ID")!,
+          price: priceId,
           quantity: 1
         }
       ],
       success_url,
       cancel_url,
       metadata: {
-        supabase_user_id: profile.id
+        supabase_user_id: profile.id,
+        app: "compresso",
+        billing_period: billingPeriod
+      },
+      subscription_data: {
+        metadata: {
+          supabase_user_id: profile.id,
+          app: "compresso",
+          billing_period: billingPeriod
+        }
       }
     });
 

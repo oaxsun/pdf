@@ -856,6 +856,8 @@ body {
 
 .plan-column-footer {
   margin-top: auto;
+  display: grid;
+  gap: 10px;
 }
 
 .plan-current-pill {
