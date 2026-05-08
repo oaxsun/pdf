@@ -329,41 +329,6 @@
             </div>
           </div>
 
-          <div id="passwordResetView" class="account-auth-wrapper account-auth-centered hidden">
-            <div class="account-auth-card account-auth-main compact-auth-card">
-              <div class="auth-card-badge">Seguridad</div>
-
-              <h3>Crear nueva contraseña</h3>
-              <p>Escribe y confirma tu nueva contraseña. Por seguridad, solo puedes cambiarla una vez cada 3 meses.</p>
-
-              <form id="passwordResetForm" class="auth-form compact-form">
-                <div class="password-field">
-                  <input id="newPassword" class="select compact-input" type="password" placeholder="Nueva contraseña" required />
-                  <button class="password-field-toggle" type="button" data-target="newPassword" aria-label="Mostrar contraseña">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-                <div class="password-field">
-                  <input id="newPasswordConfirm" class="select compact-input" type="password" placeholder="Confirmar nueva contraseña" required />
-                  <button class="password-field-toggle" type="button" data-target="newPasswordConfirm" aria-label="Mostrar contraseña">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-                <button class="btn btn-primary compact-btn" type="submit">Actualizar contraseña</button>
-              </form>
-
-              <div class="auth-switch">
-                <button id="cancelPasswordResetBtn" type="button">Volver a mi cuenta</button>
-              </div>
-            </div>
-          </div>
-
           <div id="accountUserView" class="account-dashboard hidden">
             <div class="account-summary-card">
               <div>
@@ -403,6 +368,60 @@
             </div>
           </div>
         </section>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- RESET PASSWORD MODAL -->
+  <div id="passwordResetView" class="modal-backdrop hidden">
+    <div class="modal password-reset-modal">
+      <button id="cancelPasswordResetBtn" class="modal-x" type="button" aria-label="Cerrar recuperación de contraseña">×</button>
+      <div class="modal-badge">Seguridad de cuenta</div>
+      <h3>Crear nueva contraseña</h3>
+      <p class="password-reset-copy">
+        Escribe y confirma tu nueva contraseña. Por seguridad, solo puedes cambiarla una vez cada 3 meses.
+      </p>
+
+      <form id="passwordResetForm" class="auth-form compact-form password-reset-form">
+        <div class="password-field">
+          <input id="newPassword" class="select compact-input" type="password" placeholder="Nueva contraseña" required />
+          <button class="password-field-toggle" type="button" data-target="newPassword" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="password-field">
+          <input id="newPasswordConfirm" class="select compact-input" type="password" placeholder="Confirmar nueva contraseña" required />
+          <button class="password-field-toggle" type="button" data-target="newPasswordConfirm" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <button class="btn btn-primary compact-btn" type="submit">Cambiar contraseña</button>
+      </form>
+
+      <div id="passwordResetMessage" class="message auth-message"></div>
+    </div>
+  </div>
+
+  <!-- CONFIRMAR CAMBIO DE CONTRASEÑA -->
+  <div id="confirmPasswordChangeModal" class="modal-backdrop hidden">
+    <div class="modal confirm-password-modal">
+      <div class="modal-badge">Confirmar acción</div>
+      <h3>¿Cambiar contraseña ahora?</h3>
+      <p>
+        Por seguridad, después de cambiar tu contraseña tendrás que esperar 3 meses para volver a actualizarla.
+      </p>
+      <div class="modal-actions confirm-password-actions">
+        <button id="cancelPasswordChangeBtn" class="btn modal-close" type="button">Cancelar</button>
+        <button id="confirmPasswordChangeBtn" class="btn btn-primary" type="button">Sí, cambiar contraseña</button>
       </div>
     </div>
   </div>

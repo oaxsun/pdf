@@ -38,6 +38,10 @@ const newPassword = document.getElementById("newPassword");
 const newPasswordConfirm = document.getElementById("newPasswordConfirm");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 const cancelPasswordResetBtn = document.getElementById("cancelPasswordResetBtn");
+const passwordResetMessage = document.getElementById("passwordResetMessage");
+const confirmPasswordChangeModal = document.getElementById("confirmPasswordChangeModal");
+const confirmPasswordChangeBtn = document.getElementById("confirmPasswordChangeBtn");
+const cancelPasswordChangeBtn = document.getElementById("cancelPasswordChangeBtn");
 
 window.currentUserPlan = "guest";
 window.currentUser = null;
@@ -62,69 +66,7 @@ function getEffectivePlan(plan, email) {
 let isRefreshingSession = false;
 const PASSWORD_CHANGE_COOLDOWN_MONTHS = 3;
 let isPasswordRecoveryFlow = false;
-
-function getRecoveryRedirectUrl() {
-  return `${window.location.origin}${window.location.pathname}?reset-password=1`;
-}
-
-function getUrlHashParams() {
-  const hash = window.location.hash?.startsWith("#")
-    ? window.location.hash.slice(1)
-    : window.location.hash;
-  return new URLSearchParams(hash || "");
-}
-
-function isRecoveryUrl() {
-  const query = new URLSearchParams(window.location.search);
-  const hash = getUrlHashParams();
-
-  return (
-    query.get("reset-password") === "1" ||
-    query.get("type") === "recovery" ||
-    hash.get("type") === "recovery" ||
-    hash.has("access_token") ||
-    query.has("code")
-  );
-}
-
-function cleanupRecoveryUrl() {
-  if (!isRecoveryUrl()) return;
-  window.history.replaceState({}, document.title, getRecoveryRedirectUrl());
-}
-
-async function establishRecoverySessionFromUrl() {
-  const query = new URLSearchParams(window.location.search);
-  const hash = getUrlHashParams();
-
-  try {
-    const code = query.get("code");
-    if (code) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) throw error;
-      cleanupRecoveryUrl();
-      return true;
-    }
-
-    const accessToken = hash.get("access_token");
-    const refreshToken = hash.get("refresh_token");
-
-    if (accessToken && refreshToken) {
-      const { error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken
-      });
-      if (error) throw error;
-      cleanupRecoveryUrl();
-      return true;
-    }
-
-    return false;
-  } catch (error) {
-    console.error("No se pudo establecer la sesión de recuperación:", error);
-    setAuthMessage("El enlace de recuperación expiró o no es válido. Solicita otro enlace.", true);
-    return false;
-  }
-}
+let pendingPasswordReset = null;
 
 function formatDateForUser(value) {
   if (!value) return "";
@@ -166,6 +108,13 @@ function setAuthMessage(text, isError = false) {
   if (!authMessage) return;
   authMessage.textContent = text;
   authMessage.style.color = isError ? "#fca5a5" : "#94a3b8";
+}
+
+function setPasswordResetMessage(text, isError = false) {
+  const target = passwordResetMessage || authMessage;
+  if (!target) return;
+  target.textContent = text;
+  target.style.color = isError ? "#fca5a5" : "#94a3b8";
 }
 
 function setSubmitState(form, isLoading, loadingText, defaultText) {
@@ -218,11 +167,18 @@ function showRegisterPanel() {
 }
 
 function showPasswordResetPanel() {
-  accountGuestView?.classList.add("hidden");
-  accountUserView?.classList.add("hidden");
   passwordResetView?.classList.remove("hidden");
-  safeSetText(accountPageLead, "Crea una nueva contraseña para tu cuenta.");
-  setAuthMessage("");
+  confirmPasswordChangeModal?.classList.add("hidden");
+  setPasswordResetMessage("");
+  newPassword && (newPassword.value = "");
+  newPasswordConfirm && (newPasswordConfirm.value = "");
+}
+
+function closePasswordResetPanel() {
+  passwordResetView?.classList.add("hidden");
+  confirmPasswordChangeModal?.classList.add("hidden");
+  pendingPasswordReset = null;
+  setPasswordResetMessage("");
 }
 
 showCreateAccountBtn?.addEventListener("click", showRegisterPanel);
@@ -536,7 +492,7 @@ resetPasswordBtn?.addEventListener("click", async () => {
   resetPasswordBtn.textContent = "Enviando...";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: getRecoveryRedirectUrl()
+    redirectTo: `${window.location.origin}?reset-password=1`
   });
 
   resetPasswordBtn.disabled = false;
@@ -564,7 +520,7 @@ forgotPasswordBtn?.addEventListener("click", async () => {
   forgotPasswordBtn.textContent = "Enviando enlace...";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: getRecoveryRedirectUrl()
+    redirectTo: `${window.location.origin}?reset-password=1`
   });
 
   forgotPasswordBtn.disabled = false;
@@ -585,24 +541,24 @@ passwordResetForm?.addEventListener("submit", async (e) => {
   const confirm = newPasswordConfirm?.value;
 
   if (!password || !confirm) {
-    setAuthMessage("Completa ambos campos.", true);
+    setPasswordResetMessage("Completa ambos campos.", true);
     return;
   }
 
   if (password !== confirm) {
-    setAuthMessage("Las contraseñas no coinciden.", true);
+    setPasswordResetMessage("Las contraseñas no coinciden.", true);
     return;
   }
 
   if (password.length < 6) {
-    setAuthMessage("La contraseña debe tener al menos 6 caracteres.", true);
+    setPasswordResetMessage("La contraseña debe tener al menos 6 caracteres.", true);
     return;
   }
 
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    setAuthMessage("Tu enlace de recuperación expiró o no es válido. Solicita otro enlace.", true);
+    setPasswordResetMessage("Tu enlace de recuperación expiró o no es válido. Solicita otro enlace.", true);
     return;
   }
 
@@ -614,18 +570,31 @@ passwordResetForm?.addEventListener("submit", async (e) => {
 
   if (profile?.last_password_change_at && !canChangePassword(profile.last_password_change_at)) {
     const nextDate = getNextPasswordChangeDate(profile.last_password_change_at);
-    setAuthMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 3 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
+    setPasswordResetMessage(`Por seguridad, solo puedes cambiar tu contraseña una vez cada 3 meses. Podrás cambiarla de nuevo el ${formatDateForUser(nextDate)}.`, true);
     return;
   }
 
-  setSubmitState(passwordResetForm, true, "Actualizando...", "Actualizar contraseña");
-  setAuthMessage("Actualizando contraseña...");
+  pendingPasswordReset = { user, profile, password };
+  confirmPasswordChangeModal?.classList.remove("hidden");
+  setPasswordResetMessage("");
+});
+
+async function completePasswordUpdate() {
+  if (!pendingPasswordReset) return;
+
+  const { user, profile, password } = pendingPasswordReset;
+  setSubmitState(passwordResetForm, true, "Actualizando...", "Cambiar contraseña");
+  if (confirmPasswordChangeBtn) {
+    confirmPasswordChangeBtn.disabled = true;
+    confirmPasswordChangeBtn.textContent = "Cambiando...";
+  }
+  setPasswordResetMessage("Actualizando contraseña...");
 
   try {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setAuthMessage(getFriendlyAuthError(error), true);
+      setPasswordResetMessage(getFriendlyAuthError(error), true);
       return;
     }
 
@@ -639,24 +608,43 @@ passwordResetForm?.addEventListener("submit", async (e) => {
       }, { onConflict: "id" });
 
     const { plan, profile: ensuredProfile } = await ensureProfile(user);
-    isPasswordRecoveryFlow = false;
-    window.history.replaceState({}, document.title, `${window.location.origin}${window.location.pathname}`);
     renderPlanUi(plan, ensuredProfile);
+    closePasswordResetPanel();
+    isPasswordRecoveryFlow = false;
     setAuthMessage("Contraseña actualizada correctamente.");
     goToAccountTab();
   } catch (err) {
     console.error("Error actualizando contraseña:", err);
-    setAuthMessage(getFriendlyAuthError(err), true);
+    setPasswordResetMessage(getFriendlyAuthError(err), true);
   } finally {
-    setSubmitState(passwordResetForm, false, "Actualizando...", "Actualizar contraseña");
+    setSubmitState(passwordResetForm, false, "Actualizando...", "Cambiar contraseña");
+    if (confirmPasswordChangeBtn) {
+      confirmPasswordChangeBtn.disabled = false;
+      confirmPasswordChangeBtn.textContent = "Sí, cambiar contraseña";
+    }
+    pendingPasswordReset = null;
+    confirmPasswordChangeModal?.classList.add("hidden");
+  }
+}
+
+confirmPasswordChangeBtn?.addEventListener("click", completePasswordUpdate);
+
+cancelPasswordChangeBtn?.addEventListener("click", () => {
+  pendingPasswordReset = null;
+  confirmPasswordChangeModal?.classList.add("hidden");
+});
+
+confirmPasswordChangeModal?.addEventListener("click", (event) => {
+  if (event.target === confirmPasswordChangeModal) {
+    pendingPasswordReset = null;
+    confirmPasswordChangeModal.classList.add("hidden");
   }
 });
 
 cancelPasswordResetBtn?.addEventListener("click", async () => {
   isPasswordRecoveryFlow = false;
-  window.history.replaceState({}, document.title, `${window.location.origin}${window.location.pathname}`);
+  closePasswordResetPanel();
   await refreshSessionState();
-  goToAccountTab();
 });
 
 accountUpgradeBtn?.addEventListener("click", () => {
@@ -675,9 +663,7 @@ document.addEventListener("open-auth-modal", (event) => {
 supabase.auth.onAuthStateChange(async (event) => {
   if (event === "PASSWORD_RECOVERY") {
     isPasswordRecoveryFlow = true;
-    goToAccountTab();
     showPasswordResetPanel();
-    await establishRecoverySessionFromUrl();
     return;
   }
 
@@ -686,11 +672,10 @@ supabase.auth.onAuthStateChange(async (event) => {
   await refreshSessionState();
 });
 
-if (isRecoveryUrl()) {
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("reset-password") === "1") {
   isPasswordRecoveryFlow = true;
-  goToAccountTab();
   showPasswordResetPanel();
-  await establishRecoverySessionFromUrl();
 } else {
   showRegisterPanel();
   await refreshSessionState();

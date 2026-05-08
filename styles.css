@@ -1393,3 +1393,38 @@ body {
 .password-field-toggle.is-visible {
   color: var(--accent);
 }
+
+
+/* Reset password modal */
+.password-reset-modal,
+.confirm-password-modal {
+  max-width: 520px;
+}
+
+.password-reset-copy {
+  margin-bottom: 18px !important;
+}
+
+.password-reset-form {
+  width: min(100%, 320px);
+  max-width: 320px;
+  margin: 18px auto 0;
+}
+
+#passwordResetMessage {
+  width: min(100%, 320px);
+  max-width: 320px;
+  margin: 14px auto 0;
+  text-align: center;
+}
+
+.confirm-password-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 560px) {
+  .confirm-password-actions {
+    grid-template-columns: 1fr;
+  }
+}
