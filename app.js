@@ -442,34 +442,17 @@ applyProLock();
 setTab(0);
 
 
-// Stripe Checkout - Compresso Pro
-async function startStripeCheckout(priceId) {
-  try {
-    const user = window.currentUser || null;
+// Stripe Checkout Result Handler
+(function () {
+  const params = new URLSearchParams(window.location.search);
 
-    const response = await fetch(APP_CONFIG.CREATE_CHECKOUT_FUNCTION_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        priceId,
-        customerEmail: user?.email || null
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.url) {
-      window.location.href = data.url;
-      return;
-    }
-
-    alert(data.error || "No se pudo iniciar Stripe Checkout.");
-  } catch (error) {
-    console.error(error);
-    alert("Error iniciando Stripe Checkout.");
+  if (params.get("checkout") === "success") {
+    alert("✅ Pago realizado con éxito. Tu cuenta PRO será activada en unos segundos.");
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
-}
 
-window.startStripeCheckout = startStripeCheckout;
+  if (params.get("checkout") === "cancel") {
+    alert("❌ El proceso de pago fue cancelado.");
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+})();
