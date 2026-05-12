@@ -440,3 +440,36 @@ syncPresetControls("optimal");
 updateRangeLabels();
 applyProLock();
 setTab(0);
+
+
+// Stripe Checkout - Compresso Pro
+async function startStripeCheckout(priceId) {
+  try {
+    const user = window.currentUser || null;
+
+    const response = await fetch(APP_CONFIG.CREATE_CHECKOUT_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        priceId,
+        customerEmail: user?.email || null
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.url) {
+      window.location.href = data.url;
+      return;
+    }
+
+    alert(data.error || "No se pudo iniciar Stripe Checkout.");
+  } catch (error) {
+    console.error(error);
+    alert("Error iniciando Stripe Checkout.");
+  }
+}
+
+window.startStripeCheckout = startStripeCheckout;

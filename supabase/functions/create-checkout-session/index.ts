@@ -11,11 +11,26 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
 
-    const { priceId, customerEmail } = body;
+    const priceId =
+      body.price_id ||
+      body.priceId;
 
-    const origin =
-      req.headers.get("origin") ||
-      "https://compresso.oaxsun.tech";
+    const customerEmail =
+      body.customer_email ||
+      body.customerEmail ||
+      null;
+
+    const successUrl =
+      body.success_url ||
+      `${req.headers.get("origin") || "https://compresso.oaxsun.tech"}?checkout=success`;
+
+    const cancelUrl =
+      body.cancel_url ||
+      `${req.headers.get("origin") || "https://compresso.oaxsun.tech"}?checkout=cancel`;
+
+    if (!priceId) {
+      throw new Error("Missing Stripe Price ID");
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -31,8 +46,8 @@ Deno.serve(async (req) => {
 
       customer_email: customerEmail,
 
-      success_url: `${origin}?checkout=success`,
-      cancel_url: `${origin}?checkout=cancelled`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
 
       metadata: {
         app: "compresso"
