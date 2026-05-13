@@ -1,6 +1,8 @@
 const { jsPDF } = window.jspdf;
 
 import { startCheckout } from "./pricing.js";
+import { supabase } from "./supabaseClient.js";
+import { APP_CONFIG } from "./config.js";
 
 const fileInput = document.getElementById("fileInput");
 const dropzone = document.getElementById("dropzone");
@@ -443,16 +445,80 @@ setTab(0);
 
 
 // Stripe Checkout Result Handler
+async function syncStripeCheckoutSession(sessionId) {
+  if (!APP_CONFIG.SYNC_CHECKOUT_FUNCTION_URL) {
+    throw new Error("Falta configurar SYNC_CHECKOUT_FUNCTION_URL en config.js.");
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    throw new Error("Inicia sesión para activar tu cuenta PRO.");
+  }
+
+  const response = await fetch(APP_CONFIG.SYNC_CHECKOUT_FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.access_token}`
+    },
+    body: JSON.stringify({
+      session_id: sessionId
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "No se pudo activar tu cuenta PRO.");
+  }
+
+  return data;
+}
+
 (function () {
   const params = new URLSearchParams(window.location.search);
+  const checkoutStatus = params.get("checkout");
+  const sessionId = params.get("session_id");
 
-  if (params.get("checkout") === "success") {
-    alert("✅ Pago realizado con éxito. Tu cuenta PRO será activada en unos segundos.");
+  if (checkoutStatus === "success") {
+    const successMessage = "✅ Pago aprobado. Activando tu cuenta PRO...";
+
+    if (message) {
+      message.textContent = successMessage;
+    }
+
+    alert(successMessage);
+
+    if (sessionId) {
+      syncStripeCheckoutSession(sessionId)
+        .then(() => {
+          document.dispatchEvent(new CustomEvent("refresh-account-state"));
+
+          setTimeout(() => {
+            document.dispatchEvent(new CustomEvent("refresh-account-state"));
+          }, 1200);
+
+          setTimeout(() => {
+            alert("🎉 Tu cuenta PRO ya está activa.");
+            window.location.reload();
+          }, 1800);
+        })
+        .catch((error) => {
+          console.error(error);
+          alert(`Tu pago fue aprobado, pero no pudimos actualizar tu cuenta automáticamente: ${error.message}. Recarga la página o revisa el webhook.`);
+        });
+    } else {
+      setTimeout(() => {
+        document.dispatchEvent(new CustomEvent("refresh-account-state"));
+      }, 2500);
+    }
+
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  if (params.get("checkout") === "cancel") {
-    alert("❌ El proceso de pago fue cancelado.");
+  if (checkoutStatus === "cancel") {
+    alert("❌ El proceso de pago fue cancelado. No se realizó ningún cargo.");
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 })();

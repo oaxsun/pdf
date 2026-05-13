@@ -856,8 +856,6 @@ body {
 
 .plan-column-footer {
   margin-top: auto;
-  display: grid;
-  gap: 10px;
 }
 
 .plan-current-pill {
@@ -1429,4 +1427,22 @@ body {
   .confirm-password-actions {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* Stripe / PRO account state */
+.account-badge-pro {
+  color: #221302 !important;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  border-color: rgba(251,191,36,.45) !important;
+}
+
+.btn-manage {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #04210f;
+  box-shadow: 0 12px 30px rgba(34,197,94,.16);
+}
+
+.btn-manage:hover {
+  filter: brightness(1.04);
 }

@@ -35,22 +35,3 @@ Proyecto listo para Git con:
 ## Nota
 
 No expongas nunca la `SUPABASE_SERVICE_ROLE_KEY` en el frontend.
-
-
-## Stripe - Compresso Pro
-
-Price IDs configurados en este proyecto:
-
-- Mensual ($29 MXN): `price_1TUwUZK5nFoesXlkApbFtwEF`
-- Anual ($199 MXN): `price_1TUwVYK5nFoesXlkLOslgwDx`
-
-La `STRIPE_SECRET_KEY` nunca debe ir en frontend ni en GitHub. Debe configurarse como secret en Supabase Edge Functions.
-
-Secrets necesarios en Supabase:
-
-```bash
-supabase secrets set STRIPE_SECRET_KEY=sk_test_xxx
-supabase secrets set STRIPE_WEBHOOK_SIGNING_SECRET=whsec_xxx
-```
-
-La Edge Function `create-checkout-session` ya valida y usa los Price IDs mensual/anual.

@@ -6,14 +6,7 @@ const closePlansModal = document.getElementById("closePlansModal");
 const closePlansModalTop = document.getElementById("closePlansModalTop");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
-const plansProMonthlyBtn = document.getElementById("plansProMonthlyBtn");
-const plansProYearlyBtn = document.getElementById("plansProYearlyBtn");
-const legacyPlansProBtn = document.getElementById("plansProBtn");
-
-const STRIPE_PRICE_IDS = {
-  monthly: APP_CONFIG.STRIPE_MONTHLY_PRICE_ID,
-  yearly: APP_CONFIG.STRIPE_YEARLY_PRICE_ID
-};
+const plansProBtn = document.getElementById("plansProBtn");
 
 export function openPlansModal() {
   if (!plansModal) {
@@ -27,10 +20,6 @@ export function closePlansModalFn() {
   plansModal?.classList.add("hidden");
 }
 
-function getPriceId(billingPeriod = "monthly") {
-  return billingPeriod === "yearly" ? STRIPE_PRICE_IDS.yearly : STRIPE_PRICE_IDS.monthly;
-}
-
 async function goToCheckout(billingPeriod = "monthly") {
   const plan = window.currentUserPlan || "guest";
 
@@ -42,15 +31,23 @@ async function goToCheckout(billingPeriod = "monthly") {
     return;
   }
 
+  if (plan === "pro") {
+    alert("Tu cuenta ya tiene Compresso PRO activo.");
+    return;
+  }
+
   if (!APP_CONFIG.CREATE_CHECKOUT_FUNCTION_URL) {
     alert("Falta configurar CREATE_CHECKOUT_FUNCTION_URL en config.js para activar pagos.");
     return;
   }
 
-  const priceId = getPriceId(billingPeriod);
+  const priceId =
+    billingPeriod === "yearly"
+      ? APP_CONFIG.STRIPE_YEARLY_PRICE_ID
+      : APP_CONFIG.STRIPE_MONTHLY_PRICE_ID;
 
   if (!priceId) {
-    alert("Falta configurar el Price ID de Stripe para este plan.");
+    alert("Falta configurar el Price ID de Stripe.");
     return;
   }
 
@@ -58,9 +55,7 @@ async function goToCheckout(billingPeriod = "monthly") {
     document.getElementById("buyProBtn"),
     document.getElementById("buyProBtnPage"),
     document.getElementById("accountUpgradeBtn"),
-    plansProMonthlyBtn,
-    plansProYearlyBtn,
-    legacyPlansProBtn
+    plansProBtn
   ];
 
   triggerButtons.forEach((btn) => {
@@ -75,7 +70,7 @@ async function goToCheckout(billingPeriod = "monthly") {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      throw new Error("No hay sesión activa.");
+      throw new Error("Inicia sesión para activar Compresso PRO.");
     }
 
     const res = await fetch(APP_CONFIG.CREATE_CHECKOUT_FUNCTION_URL, {
@@ -85,9 +80,9 @@ async function goToCheckout(billingPeriod = "monthly") {
         "Authorization": `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
-        billing_period: billingPeriod,
         price_id: priceId,
-        success_url: `${window.location.origin}/?checkout=success`,
+        billing_period: billingPeriod,
+        success_url: `${window.location.origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${window.location.origin}/?checkout=cancel`
       })
     });
@@ -98,6 +93,10 @@ async function goToCheckout(billingPeriod = "monthly") {
       throw new Error(data.error || "No se pudo crear la sesión de Stripe.");
     }
 
+    if (!data.url) {
+      throw new Error("Stripe no devolvió una URL de Checkout.");
+    }
+
     window.location.href = data.url;
   } catch (error) {
     alert(error.message);
@@ -106,7 +105,6 @@ async function goToCheckout(billingPeriod = "monthly") {
       if (btn) {
         btn.disabled = false;
         btn.textContent = btn.dataset.originalText || "Hazte PRO";
-        delete btn.dataset.originalText;
       }
     });
   }
@@ -142,14 +140,6 @@ plansFreeRegisterBtn?.addEventListener("click", () => {
   }));
 });
 
-legacyPlansProBtn?.addEventListener("click", async () => {
+plansProBtn?.addEventListener("click", async () => {
   await goToCheckout("monthly");
-});
-
-plansProMonthlyBtn?.addEventListener("click", async () => {
-  await goToCheckout("monthly");
-});
-
-plansProYearlyBtn?.addEventListener("click", async () => {
-  await goToCheckout("yearly");
 });

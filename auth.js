@@ -28,6 +28,7 @@ const accountEmail = document.getElementById("accountEmail");
 const accountPlan = document.getElementById("accountPlan");
 const accountPlanDescription = document.getElementById("accountPlanDescription");
 const accountUpgradeBtn = document.getElementById("accountUpgradeBtn");
+const buyProBtn = document.getElementById("buyProBtn");
 const accountLogoutBtn = document.getElementById("accountLogoutBtn");
 const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 const accountPageLead = document.getElementById("accountPageLead");
@@ -216,22 +217,40 @@ function renderPlanUi(plan, profile = null) {
   window.currentUser = profile;
 
   if (plan === "pro") {
-    safeSetText(planBadge, "Pro");
+    safeSetText(planBadge, "PRO");
+    planBadge?.classList.add("account-badge-pro");
     safeSetText(heroText, "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta Pro te permite comprimir archivos sin límite de tamaño.");
     safeSetText(dropzoneText, "Haz clic aquí o arrastra un archivo PDF. Límite actual: sin límite.");
-    safeSetText(accountHelp, "Plan activo: Pro · Compresión ilimitada · Controles avanzados desbloqueados");
+    safeSetText(accountHelp, "Plan activo: PRO · Compresión ilimitada · Controles avanzados desbloqueados");
+    if (typeof buyProBtn !== "undefined" && buyProBtn) {
+      buyProBtn.textContent = "GESTIONAR CUENTA";
+      buyProBtn.classList.remove("btn-gold");
+      buyProBtn.classList.add("btn-manage");
+    }
     safeSetText(accountNavBtn, "Cuenta");
   } else if (plan === "free") {
     safeSetText(planBadge, "Gratis");
+    planBadge?.classList.remove("account-badge-pro");
     safeSetText(heroText, "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta gratuita permite comprimir archivos de hasta 400 MB. Hazte Pro para comprimir sin límite de tamaño.");
     safeSetText(dropzoneText, "Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 400 MB.");
     safeSetText(accountHelp, "Plan activo: Gratis · Límite por archivo: 400 MB");
+    if (buyProBtn) {
+      buyProBtn.textContent = "Hazte PRO";
+      buyProBtn.classList.add("btn-gold");
+      buyProBtn.classList.remove("btn-manage");
+    }
     safeSetText(accountNavBtn, "Cuenta");
   } else {
     safeSetText(planBadge, "Invitado");
+    planBadge?.classList.remove("account-badge-pro");
     safeSetText(heroText, "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.");
     safeSetText(dropzoneText, "Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.");
     safeSetText(accountHelp, "Sin login: 200 MB · Cuenta gratis: 400 MB · Pro: ilimitado");
+    if (buyProBtn) {
+      buyProBtn.textContent = "Hazte PRO";
+      buyProBtn.classList.add("btn-gold");
+      buyProBtn.classList.remove("btn-manage");
+    }
     safeSetText(accountNavBtn, "Login");
   }
 
@@ -267,7 +286,33 @@ function renderAccountPage(plan, profile) {
       : "Límite actual: 400 MB por archivo."
   );
 
-  accountUpgradeBtn?.classList.toggle("hidden", plan === "pro");
+  if (accountUpgradeBtn) {
+    accountUpgradeBtn.classList.remove("hidden");
+
+    if (plan === "pro") {
+      accountUpgradeBtn.textContent = "Gestionar cuenta";
+      accountUpgradeBtn.classList.remove("btn-gold");
+      accountUpgradeBtn.classList.add("btn-manage");
+    } else {
+      accountUpgradeBtn.textContent = "Hazte PRO";
+      accountUpgradeBtn.classList.add("btn-gold");
+      accountUpgradeBtn.classList.remove("btn-manage");
+    }
+  }
+
+  if (plan === "pro" && profile?.subscription_current_period_end) {
+    const renewDate = new Date(profile.subscription_current_period_end).toLocaleDateString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+
+    safeSetText(
+      accountPlanDescription,
+      `Pro activo · Próxima renovación: ${renewDate}`
+    );
+  }
+
   safeSetText(accountPageLead, "Administra tu correo, contraseña, suscripción y sesión.");
 }
 
@@ -278,7 +323,7 @@ async function ensureProfile(user) {
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("plan,email,last_password_change_at")
+    .select("plan,email,last_password_change_at,stripe_customer_id,stripe_subscription_id,subscription_status,subscription_current_period_start,subscription_current_period_end,subscription_cancel_at_period_end")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -680,3 +725,8 @@ if (urlParams.get("reset-password") === "1") {
   showRegisterPanel();
   await refreshSessionState();
 }
+
+
+document.addEventListener("refresh-account-state", async () => {
+  await refreshSessionState();
+});
