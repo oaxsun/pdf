@@ -7,18 +7,56 @@ const closePlansModalTop = document.getElementById("closePlansModalTop");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
 const plansProBtn = document.getElementById("plansProBtn");
+const selectMonthlyPlanBtn = document.getElementById("selectMonthlyPlanBtn");
+const selectYearlyPlanBtn = document.getElementById("selectYearlyPlanBtn");
+
+
+function updatePlansModalByCurrentPlan() {
+  const plan = window.currentUserPlan || "guest";
+
+  if (plansGuestLoginBtn) {
+    plansGuestLoginBtn.disabled = plan !== "guest";
+    plansGuestLoginBtn.textContent = plan === "guest" ? "Continuar" : "Nivel superado";
+    plansGuestLoginBtn.classList.toggle("btn-disabled-soft", plan !== "guest");
+  }
+
+  if (plansFreeRegisterBtn) {
+    if (plan === "guest") {
+      plansFreeRegisterBtn.disabled = false;
+      plansFreeRegisterBtn.textContent = "Regístrate gratis";
+      plansFreeRegisterBtn.classList.remove("btn-disabled-soft");
+    } else if (plan === "free") {
+      plansFreeRegisterBtn.disabled = true;
+      plansFreeRegisterBtn.textContent = "Plan actual";
+      plansFreeRegisterBtn.classList.add("btn-disabled-soft");
+    } else {
+      plansFreeRegisterBtn.disabled = true;
+      plansFreeRegisterBtn.textContent = "Incluido en PRO";
+      plansFreeRegisterBtn.classList.add("btn-disabled-soft");
+    }
+  }
+}
 
 export function openPlansModal() {
   if (!plansModal) {
     console.warn("No existe #plansModal en el HTML.");
     return;
   }
+  updatePlansModalByCurrentPlan();
   plansModal.classList.remove("hidden");
 }
 
 export function closePlansModalFn() {
   plansModal?.classList.add("hidden");
 }
+
+export function goToPricingPage() {
+  closePlansModalFn();
+  document.dispatchEvent(new CustomEvent("navigate-tab", {
+    detail: { tab: 2 }
+  }));
+}
+
 
 async function goToCheckout(billingPeriod = "monthly") {
   const plan = window.currentUserPlan || "guest";
@@ -114,9 +152,6 @@ export async function startCheckout() {
   openPlansModal();
 }
 
-document.getElementById("buyProBtn")?.addEventListener("click", startCheckout);
-document.getElementById("buyProBtnPage")?.addEventListener("click", startCheckout);
-document.getElementById("accountUpgradeBtn")?.addEventListener("click", startCheckout);
 
 document.addEventListener("open-plans-modal", startCheckout);
 
@@ -140,6 +175,17 @@ plansFreeRegisterBtn?.addEventListener("click", () => {
   }));
 });
 
-plansProBtn?.addEventListener("click", async () => {
+plansProBtn?.addEventListener("click", goToPricingPage);
+
+
+selectMonthlyPlanBtn?.addEventListener("click", async () => {
   await goToCheckout("monthly");
 });
+
+selectYearlyPlanBtn?.addEventListener("click", async () => {
+  await goToCheckout("yearly");
+});
+
+document.addEventListener("go-to-pricing-page", goToPricingPage);
+
+document.addEventListener("plan-updated", updatePlansModalByCurrentPlan);

@@ -1,6 +1,6 @@
 const { jsPDF } = window.jspdf;
 
-import { startCheckout } from "./pricing.js";
+import { startCheckout, goToPricingPage } from "./pricing.js";
 import { supabase } from "./supabaseClient.js";
 import { APP_CONFIG } from "./config.js";
 
@@ -80,6 +80,12 @@ function setTab(index) {
     link.classList.toggle("active", Number(link.dataset.tab) === index);
   });
 }
+
+
+document.addEventListener("navigate-tab", (event) => {
+  const tab = Number(event.detail?.tab ?? 0);
+  setTab(tab);
+});
 
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "-";
@@ -420,8 +426,8 @@ compressBtn.addEventListener("click", async () => {
   }
 });
 
-buyProBtn?.addEventListener("click", startCheckout);
-buyProBtnPage?.addEventListener("click", startCheckout);
+buyProBtn?.addEventListener("click", goToPricingPage);
+buyProBtnPage?.addEventListener("click", goToPricingPage);
 
 document.addEventListener("plan-updated", () => {
   applyProLock();

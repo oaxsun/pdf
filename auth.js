@@ -693,7 +693,7 @@ cancelPasswordResetBtn?.addEventListener("click", async () => {
 });
 
 accountUpgradeBtn?.addEventListener("click", () => {
-  document.dispatchEvent(new CustomEvent("open-plans-modal"));
+  document.dispatchEvent(new CustomEvent("go-to-pricing-page"));
 });
 
 document.addEventListener("open-auth-modal", (event) => {
