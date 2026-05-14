@@ -1,6 +1,6 @@
 const { jsPDF } = window.jspdf;
 
-import { startCheckout, goToPricingPage } from "./pricing.js";
+import { startCheckout } from "./pricing.js";
 import { supabase } from "./supabaseClient.js";
 import { APP_CONFIG } from "./config.js";
 
@@ -426,8 +426,8 @@ compressBtn.addEventListener("click", async () => {
   }
 });
 
-buyProBtn?.addEventListener("click", goToPricingPage);
-buyProBtnPage?.addEventListener("click", goToPricingPage);
+buyProBtn?.addEventListener("click", startCheckout);
+buyProBtnPage?.addEventListener("click", startCheckout);
 
 document.addEventListener("plan-updated", () => {
   applyProLock();

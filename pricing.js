@@ -6,10 +6,8 @@ const closePlansModal = document.getElementById("closePlansModal");
 const closePlansModalTop = document.getElementById("closePlansModalTop");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
-const plansProBtn = document.getElementById("plansProBtn");
-const selectMonthlyPlanBtn = document.getElementById("selectMonthlyPlanBtn");
-const selectYearlyPlanBtn = document.getElementById("selectYearlyPlanBtn");
-
+const plansMonthlyBtn = document.getElementById("plansMonthlyBtn");
+const plansYearlyBtn = document.getElementById("plansYearlyBtn");
 
 function updatePlansModalByCurrentPlan() {
   const plan = window.currentUserPlan || "guest";
@@ -42,6 +40,7 @@ export function openPlansModal() {
     console.warn("No existe #plansModal en el HTML.");
     return;
   }
+
   updatePlansModalByCurrentPlan();
   plansModal.classList.remove("hidden");
 }
@@ -49,14 +48,6 @@ export function openPlansModal() {
 export function closePlansModalFn() {
   plansModal?.classList.add("hidden");
 }
-
-export function goToPricingPage() {
-  closePlansModalFn();
-  document.dispatchEvent(new CustomEvent("navigate-tab", {
-    detail: { tab: 2 }
-  }));
-}
-
 
 async function goToCheckout(billingPeriod = "monthly") {
   const plan = window.currentUserPlan || "guest";
@@ -93,7 +84,8 @@ async function goToCheckout(billingPeriod = "monthly") {
     document.getElementById("buyProBtn"),
     document.getElementById("buyProBtnPage"),
     document.getElementById("accountUpgradeBtn"),
-    plansProBtn
+    plansMonthlyBtn,
+    plansYearlyBtn
   ];
 
   triggerButtons.forEach((btn) => {
@@ -152,8 +144,12 @@ export async function startCheckout() {
   openPlansModal();
 }
 
+document.getElementById("buyProBtn")?.addEventListener("click", startCheckout);
+document.getElementById("buyProBtnPage")?.addEventListener("click", startCheckout);
+document.getElementById("accountUpgradeBtn")?.addEventListener("click", startCheckout);
 
 document.addEventListener("open-plans-modal", startCheckout);
+document.addEventListener("plan-updated", updatePlansModalByCurrentPlan);
 
 closePlansModal?.addEventListener("click", closePlansModalFn);
 closePlansModalTop?.addEventListener("click", closePlansModalFn);
@@ -175,17 +171,10 @@ plansFreeRegisterBtn?.addEventListener("click", () => {
   }));
 });
 
-plansProBtn?.addEventListener("click", goToPricingPage);
-
-
-selectMonthlyPlanBtn?.addEventListener("click", async () => {
+plansMonthlyBtn?.addEventListener("click", async () => {
   await goToCheckout("monthly");
 });
 
-selectYearlyPlanBtn?.addEventListener("click", async () => {
+plansYearlyBtn?.addEventListener("click", async () => {
   await goToCheckout("yearly");
 });
-
-document.addEventListener("go-to-pricing-page", goToPricingPage);
-
-document.addEventListener("plan-updated", updatePlansModalByCurrentPlan);
