@@ -6,8 +6,36 @@ const closePlansModal = document.getElementById("closePlansModal");
 const closePlansModalTop = document.getElementById("closePlansModalTop");
 const plansGuestLoginBtn = document.getElementById("plansGuestLoginBtn");
 const plansFreeRegisterBtn = document.getElementById("plansFreeRegisterBtn");
-const plansMonthlyBtn = document.getElementById("plansMonthlyBtn");
-const plansYearlyBtn = document.getElementById("plansYearlyBtn");
+const plansProBtn = document.getElementById("plansProBtn");
+
+const billingMonthlyBtn = document.getElementById("billingMonthlyBtn");
+const billingYearlyBtn = document.getElementById("billingYearlyBtn");
+const proPlanPrice = document.getElementById("proPlanPrice");
+const proPlanSubprice = document.getElementById("proPlanSubprice");
+const proPlanSavings = document.getElementById("proPlanSavings");
+const proBillingCopy = document.getElementById("proBillingCopy");
+
+let selectedBillingPeriod = "monthly";
+
+function updateProBillingSwitch(period = "monthly") {
+  selectedBillingPeriod = period;
+  const isYearly = period === "yearly";
+
+  billingMonthlyBtn?.classList.toggle("active", !isYearly);
+  billingYearlyBtn?.classList.toggle("active", isYearly);
+
+  if (proPlanPrice) proPlanPrice.textContent = isYearly ? "$199" : "$29";
+  if (proPlanSubprice) proPlanSubprice.textContent = isYearly ? "MXN / año" : "MXN / mes";
+  proPlanSavings?.classList.toggle("hidden", !isYearly);
+
+  if (proBillingCopy) {
+    proBillingCopy.textContent = isYearly ? "Ahorra 43% frente al pago mensual" : "Cancela cuando quieras";
+  }
+
+  if (plansProBtn) {
+    plansProBtn.textContent = isYearly ? "Elegir Pro anual" : "Elegir Pro mensual";
+  }
+}
 
 function updatePlansModalByCurrentPlan() {
   const plan = window.currentUserPlan || "guest";
@@ -33,6 +61,18 @@ function updatePlansModalByCurrentPlan() {
       plansFreeRegisterBtn.classList.add("btn-disabled-soft");
     }
   }
+
+  if (plansProBtn) {
+    if (plan === "pro") {
+      plansProBtn.disabled = true;
+      plansProBtn.textContent = "PRO activo";
+      plansProBtn.classList.add("btn-disabled-soft");
+    } else {
+      plansProBtn.disabled = false;
+      plansProBtn.classList.remove("btn-disabled-soft");
+      updateProBillingSwitch(selectedBillingPeriod);
+    }
+  }
 }
 
 export function openPlansModal() {
@@ -41,6 +81,7 @@ export function openPlansModal() {
     return;
   }
 
+  updateProBillingSwitch(selectedBillingPeriod);
   updatePlansModalByCurrentPlan();
   plansModal.classList.remove("hidden");
 }
@@ -54,9 +95,7 @@ async function goToCheckout(billingPeriod = "monthly") {
 
   if (plan === "guest") {
     closePlansModalFn();
-    document.dispatchEvent(new CustomEvent("open-auth-modal", {
-      detail: { mode: "register" }
-    }));
+    document.dispatchEvent(new CustomEvent("open-auth-modal", { detail: { mode: "register" } }));
     return;
   }
 
@@ -70,10 +109,9 @@ async function goToCheckout(billingPeriod = "monthly") {
     return;
   }
 
-  const priceId =
-    billingPeriod === "yearly"
-      ? APP_CONFIG.STRIPE_YEARLY_PRICE_ID
-      : APP_CONFIG.STRIPE_MONTHLY_PRICE_ID;
+  const priceId = billingPeriod === "yearly"
+    ? APP_CONFIG.STRIPE_YEARLY_PRICE_ID
+    : APP_CONFIG.STRIPE_MONTHLY_PRICE_ID;
 
   if (!priceId) {
     alert("Falta configurar el Price ID de Stripe.");
@@ -84,8 +122,7 @@ async function goToCheckout(billingPeriod = "monthly") {
     document.getElementById("buyProBtn"),
     document.getElementById("buyProBtnPage"),
     document.getElementById("accountUpgradeBtn"),
-    plansMonthlyBtn,
-    plansYearlyBtn
+    plansProBtn
   ];
 
   triggerButtons.forEach((btn) => {
@@ -137,6 +174,8 @@ async function goToCheckout(billingPeriod = "monthly") {
         btn.textContent = btn.dataset.originalText || "Hazte PRO";
       }
     });
+
+    updatePlansModalByCurrentPlan();
   }
 }
 
@@ -166,15 +205,19 @@ plansGuestLoginBtn?.addEventListener("click", () => {
 
 plansFreeRegisterBtn?.addEventListener("click", () => {
   closePlansModalFn();
-  document.dispatchEvent(new CustomEvent("open-auth-modal", {
-    detail: { mode: "register" }
-  }));
+  document.dispatchEvent(new CustomEvent("open-auth-modal", { detail: { mode: "register" } }));
 });
 
-plansMonthlyBtn?.addEventListener("click", async () => {
-  await goToCheckout("monthly");
+billingMonthlyBtn?.addEventListener("click", () => {
+  updateProBillingSwitch("monthly");
+  updatePlansModalByCurrentPlan();
 });
 
-plansYearlyBtn?.addEventListener("click", async () => {
-  await goToCheckout("yearly");
+billingYearlyBtn?.addEventListener("click", () => {
+  updateProBillingSwitch("yearly");
+  updatePlansModalByCurrentPlan();
+});
+
+plansProBtn?.addEventListener("click", async () => {
+  await goToCheckout(selectedBillingPeriod);
 });
