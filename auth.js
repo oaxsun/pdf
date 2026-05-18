@@ -251,6 +251,22 @@ function formatDateForAccount(value) {
   }
 }
 
+function formatDateTimeForAccount(value) {
+  if (!value) return "-";
+
+  try {
+    return new Date(value).toLocaleString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  } catch {
+    return "-";
+  }
+}
+
 function getPlanPriceLabel(profile = window.currentUser || {}) {
   const priceId = profile?.stripe_price_id;
 
@@ -269,17 +285,42 @@ function getPlanPriceLabel(profile = window.currentUser || {}) {
 
 function openSubscriptionManageModal() {
   const profile = window.currentUser || {};
+  const currentPlan = window.currentUserPlan || "guest";
 
-  if ((window.currentUserPlan || "guest") !== "pro") {
+  if (currentPlan !== "pro") {
     document.dispatchEvent(new CustomEvent("open-plans-modal"));
     return;
   }
 
+  const periodEnd = profile.subscription_current_period_end;
+  const periodStart = profile.subscription_current_period_start;
+  const isCanceling = Boolean(profile.subscription_cancel_at_period_end);
+
   if (subscriptionPlanName) subscriptionPlanName.textContent = getPlanPriceLabel(profile);
-  if (subscriptionStatus) subscriptionStatus.textContent = profile.subscription_status || "Activo";
-  if (subscriptionStartDate) subscriptionStartDate.textContent = formatDateForAccount(profile.subscription_current_period_start);
-  if (subscriptionRenewDate) subscriptionRenewDate.textContent = formatDateForAccount(profile.subscription_current_period_end);
-  if (subscriptionPriceLabel) subscriptionPriceLabel.textContent = getPlanPriceLabel(profile);
+
+  if (subscriptionStatus) {
+    subscriptionStatus.textContent = isCanceling
+      ? "Cancelada · termina pronto"
+      : (profile.subscription_status || "Activo");
+  }
+
+  if (subscriptionStartDate) subscriptionStartDate.textContent = formatDateForAccount(periodStart);
+
+  if (subscriptionRenewDate) {
+    subscriptionRenewDate.textContent = isCanceling
+      ? `Termina el ${formatDateForAccount(periodEnd)}`
+      : formatDateForAccount(periodEnd);
+  }
+
+  if (subscriptionPriceLabel) {
+    const lastChargeDate = formatDateTimeForAccount(profile.subscription_current_period_start || profile.updated_at || profile.created_at);
+    subscriptionPriceLabel.textContent = `${getPlanPriceLabel(profile)} · Última cobranza: ${lastChargeDate}`;
+  }
+
+  if (cancelSubscriptionBtn) {
+    cancelSubscriptionBtn.disabled = isCanceling || !profile?.stripe_subscription_id;
+    cancelSubscriptionBtn.classList.toggle("hidden", isCanceling || !profile?.stripe_subscription_id);
+  }
 
   cancelSubscriptionMessage && (cancelSubscriptionMessage.textContent = "");
   if (cancelSubscriptionPassword) cancelSubscriptionPassword.value = "";
@@ -362,10 +403,16 @@ async function cancelStripeSubscription() {
       throw new Error(data.error || "No se pudo cancelar la suscripción.");
     }
 
+    if (window.currentUser) {
+      window.currentUser.subscription_cancel_at_period_end = true;
+      window.currentUser.subscription_status = data.status || window.currentUser.subscription_status || "active";
+    }
+
     closeCancelSubscriptionFlow();
     closeSubscriptionManage();
     alert("Tu suscripción fue cancelada. Conservarás PRO hasta el final del periodo pagado.");
     await refreshSessionState();
+    setTimeout(openSubscriptionManageModal, 250);
   } catch (error) {
     if (cancelSubscriptionMessage) {
       cancelSubscriptionMessage.textContent = error.message || "No se pudo cancelar la suscripción.";
@@ -919,6 +966,11 @@ cancelSubscriptionConfirmModal?.addEventListener("click", (event) => {
 
 cancelSubscriptionPasswordModal?.addEventListener("click", (event) => {
   if (event.target === cancelSubscriptionPasswordModal) closeCancelSubscriptionFlow();
+});
+
+document.addEventListener("open-account-management", () => {
+  goToAccountTab();
+  setTimeout(openSubscriptionManageModal, 250);
 });
 
 document.addEventListener("open-auth-modal", (event) => {
