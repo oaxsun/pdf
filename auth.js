@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient.js";
+import { APP_CONFIG } from "./config.js";
 
 const accountNavBtn = document.getElementById("accountNavBtn");
 
@@ -32,6 +33,29 @@ const buyProBtn = document.getElementById("buyProBtn");
 const accountLogoutBtn = document.getElementById("accountLogoutBtn");
 const resetPasswordBtn = document.getElementById("resetPasswordBtn");
 const accountPageLead = document.getElementById("accountPageLead");
+
+const proStatusPanel = document.getElementById("proStatusPanel");
+const proManageAccountBtn = document.getElementById("proManageAccountBtn");
+
+const subscriptionManageModal = document.getElementById("subscriptionManageModal");
+const closeSubscriptionManageModal = document.getElementById("closeSubscriptionManageModal");
+const closeSubscriptionManageBtn = document.getElementById("closeSubscriptionManageBtn");
+const subscriptionPlanName = document.getElementById("subscriptionPlanName");
+const subscriptionStatus = document.getElementById("subscriptionStatus");
+const subscriptionStartDate = document.getElementById("subscriptionStartDate");
+const subscriptionRenewDate = document.getElementById("subscriptionRenewDate");
+const subscriptionPriceLabel = document.getElementById("subscriptionPriceLabel");
+const cancelSubscriptionBtn = document.getElementById("cancelSubscriptionBtn");
+
+const cancelSubscriptionConfirmModal = document.getElementById("cancelSubscriptionConfirmModal");
+const keepSubscriptionBtn = document.getElementById("keepSubscriptionBtn");
+const continueCancelSubscriptionBtn = document.getElementById("continueCancelSubscriptionBtn");
+
+const cancelSubscriptionPasswordModal = document.getElementById("cancelSubscriptionPasswordModal");
+const cancelSubscriptionPassword = document.getElementById("cancelSubscriptionPassword");
+const cancelSubscriptionMessage = document.getElementById("cancelSubscriptionMessage");
+const backCancelSubscriptionBtn = document.getElementById("backCancelSubscriptionBtn");
+const confirmCancelSubscriptionBtn = document.getElementById("confirmCancelSubscriptionBtn");
 
 const passwordResetView = document.getElementById("passwordResetView");
 const passwordResetForm = document.getElementById("passwordResetForm");
@@ -212,6 +236,149 @@ function safeSetText(element, value) {
   if (element) element.textContent = value;
 }
 
+
+function formatDateForAccount(value) {
+  if (!value) return "-";
+
+  try {
+    return new Date(value).toLocaleDateString("es-MX", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  } catch {
+    return "-";
+  }
+}
+
+function getPlanPriceLabel(profile = window.currentUser || {}) {
+  const priceId = profile?.stripe_price_id;
+
+  if (priceId === "price_1TUwVYK5nFoesXlkLOslgwDx") {
+    return "Pro anual · $199 MXN";
+  }
+
+  if (priceId === "price_1TUwUZK5nFoesXlkApbFtwEF") {
+    return "Pro mensual · $29 MXN";
+  }
+
+  return profile?.plan === "pro" ? "Pro activo" : "-";
+}
+
+
+
+function openSubscriptionManageModal() {
+  const profile = window.currentUser || {};
+
+  if ((window.currentUserPlan || "guest") !== "pro") {
+    document.dispatchEvent(new CustomEvent("open-plans-modal"));
+    return;
+  }
+
+  if (subscriptionPlanName) subscriptionPlanName.textContent = getPlanPriceLabel(profile);
+  if (subscriptionStatus) subscriptionStatus.textContent = profile.subscription_status || "Activo";
+  if (subscriptionStartDate) subscriptionStartDate.textContent = formatDateForAccount(profile.subscription_current_period_start);
+  if (subscriptionRenewDate) subscriptionRenewDate.textContent = formatDateForAccount(profile.subscription_current_period_end);
+  if (subscriptionPriceLabel) subscriptionPriceLabel.textContent = getPlanPriceLabel(profile);
+
+  cancelSubscriptionMessage && (cancelSubscriptionMessage.textContent = "");
+  if (cancelSubscriptionPassword) cancelSubscriptionPassword.value = "";
+
+  subscriptionManageModal?.classList.remove("hidden");
+}
+
+function closeSubscriptionManage() {
+  subscriptionManageModal?.classList.add("hidden");
+}
+
+function closeCancelSubscriptionFlow() {
+  cancelSubscriptionConfirmModal?.classList.add("hidden");
+  cancelSubscriptionPasswordModal?.classList.add("hidden");
+  cancelSubscriptionMessage && (cancelSubscriptionMessage.textContent = "");
+  if (cancelSubscriptionPassword) cancelSubscriptionPassword.value = "";
+}
+
+async function cancelStripeSubscription() {
+  const password = cancelSubscriptionPassword?.value || "";
+  const profile = window.currentUser || {};
+
+  if (!password) {
+    if (cancelSubscriptionMessage) {
+      cancelSubscriptionMessage.textContent = "Ingresa tu contraseña para confirmar.";
+      cancelSubscriptionMessage.style.color = "#fca5a5";
+    }
+    return;
+  }
+
+  if (!profile?.stripe_subscription_id) {
+    if (cancelSubscriptionMessage) {
+      cancelSubscriptionMessage.textContent = "No encontramos una suscripción activa de Stripe.";
+      cancelSubscriptionMessage.style.color = "#fca5a5";
+    }
+    return;
+  }
+
+  try {
+    if (confirmCancelSubscriptionBtn) {
+      confirmCancelSubscriptionBtn.disabled = true;
+      confirmCancelSubscriptionBtn.textContent = "Cancelando...";
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+      throw new Error("No encontramos tu sesión activa.");
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password
+    });
+
+    if (signInError) {
+      throw new Error("La contraseña no es correcta.");
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error("No se pudo validar tu sesión.");
+    }
+
+    const response = await fetch(APP_CONFIG.CANCEL_SUBSCRIPTION_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        subscription_id: profile.stripe_subscription_id
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "No se pudo cancelar la suscripción.");
+    }
+
+    closeCancelSubscriptionFlow();
+    closeSubscriptionManage();
+    alert("Tu suscripción fue cancelada. Conservarás PRO hasta el final del periodo pagado.");
+    await refreshSessionState();
+  } catch (error) {
+    if (cancelSubscriptionMessage) {
+      cancelSubscriptionMessage.textContent = error.message || "No se pudo cancelar la suscripción.";
+      cancelSubscriptionMessage.style.color = "#fca5a5";
+    }
+  } finally {
+    if (confirmCancelSubscriptionBtn) {
+      confirmCancelSubscriptionBtn.disabled = false;
+      confirmCancelSubscriptionBtn.textContent = "Confirmar cancelación";
+    }
+  }
+}
+
 function renderPlanUi(plan, profile = null) {
   window.currentUserPlan = plan;
   window.currentUser = profile;
@@ -224,13 +391,15 @@ function renderPlanUi(plan, profile = null) {
     safeSetText(accountHelp, "Plan activo: PRO · Compresión ilimitada · Controles avanzados desbloqueados");
     if (typeof buyProBtn !== "undefined" && buyProBtn) {
       buyProBtn.textContent = "GESTIONAR CUENTA";
-      buyProBtn.classList.remove("btn-gold");
-      buyProBtn.classList.add("btn-manage");
+      buyProBtn.classList.add("btn-gold");
+      buyProBtn.classList.remove("btn-manage");
     }
+    proStatusPanel?.classList.remove("hidden");
     safeSetText(accountNavBtn, "Cuenta");
   } else if (plan === "free") {
     safeSetText(planBadge, "Gratis");
     planBadge?.classList.remove("account-badge-pro");
+    proStatusPanel?.classList.add("hidden");
     safeSetText(heroText, "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Tu cuenta gratuita permite comprimir archivos de hasta 400 MB. Hazte Pro para comprimir sin límite de tamaño.");
     safeSetText(dropzoneText, "Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 400 MB.");
     safeSetText(accountHelp, "Plan activo: Gratis · Límite por archivo: 400 MB");
@@ -243,6 +412,7 @@ function renderPlanUi(plan, profile = null) {
   } else {
     safeSetText(planBadge, "Invitado");
     planBadge?.classList.remove("account-badge-pro");
+    proStatusPanel?.classList.add("hidden");
     safeSetText(heroText, "Reduce el tamaño de tus PDFs directamente en tu navegador. Sin subir archivos a servidores. Sin iniciar sesión puedes comprimir archivos de hasta 200 MB. Crea una cuenta gratis y aumenta tu límite a 400 MB.");
     safeSetText(dropzoneText, "Haz clic aquí o arrastra un archivo PDF. Límite actual: hasta 200 MB.");
     safeSetText(accountHelp, "Sin login: 200 MB · Cuenta gratis: 400 MB · Pro: ilimitado");
@@ -291,8 +461,8 @@ function renderAccountPage(plan, profile) {
 
     if (plan === "pro") {
       accountUpgradeBtn.textContent = "Gestionar cuenta";
-      accountUpgradeBtn.classList.remove("btn-gold");
-      accountUpgradeBtn.classList.add("btn-manage");
+      accountUpgradeBtn.classList.add("btn-gold");
+      accountUpgradeBtn.classList.remove("btn-manage");
     } else {
       accountUpgradeBtn.textContent = "Hazte PRO";
       accountUpgradeBtn.classList.add("btn-gold");
@@ -693,7 +863,62 @@ cancelPasswordResetBtn?.addEventListener("click", async () => {
 });
 
 accountUpgradeBtn?.addEventListener("click", () => {
+  if ((window.currentUserPlan || "guest") === "pro") {
+    openSubscriptionManageModal();
+    return;
+  }
+
   document.dispatchEvent(new CustomEvent("open-plans-modal"));
+});
+
+buyProBtn?.addEventListener("click", () => {
+  if ((window.currentUserPlan || "guest") === "pro") {
+    goToAccountTab();
+    return;
+  }
+
+  document.dispatchEvent(new CustomEvent("open-plans-modal"));
+});
+
+proManageAccountBtn?.addEventListener("click", () => {
+  goToAccountTab();
+  setTimeout(openSubscriptionManageModal, 250);
+});
+
+closeSubscriptionManageModal?.addEventListener("click", closeSubscriptionManage);
+closeSubscriptionManageBtn?.addEventListener("click", closeSubscriptionManage);
+subscriptionManageModal?.addEventListener("click", (event) => {
+  if (event.target === subscriptionManageModal) closeSubscriptionManage();
+});
+
+cancelSubscriptionBtn?.addEventListener("click", () => {
+  subscriptionManageModal?.classList.add("hidden");
+  cancelSubscriptionConfirmModal?.classList.remove("hidden");
+});
+
+keepSubscriptionBtn?.addEventListener("click", () => {
+  cancelSubscriptionConfirmModal?.classList.add("hidden");
+  subscriptionManageModal?.classList.remove("hidden");
+});
+
+continueCancelSubscriptionBtn?.addEventListener("click", () => {
+  cancelSubscriptionConfirmModal?.classList.add("hidden");
+  cancelSubscriptionPasswordModal?.classList.remove("hidden");
+});
+
+backCancelSubscriptionBtn?.addEventListener("click", () => {
+  cancelSubscriptionPasswordModal?.classList.add("hidden");
+  cancelSubscriptionConfirmModal?.classList.remove("hidden");
+});
+
+confirmCancelSubscriptionBtn?.addEventListener("click", cancelStripeSubscription);
+
+cancelSubscriptionConfirmModal?.addEventListener("click", (event) => {
+  if (event.target === cancelSubscriptionConfirmModal) closeCancelSubscriptionFlow();
+});
+
+cancelSubscriptionPasswordModal?.addEventListener("click", (event) => {
+  if (event.target === cancelSubscriptionPasswordModal) closeCancelSubscriptionFlow();
 });
 
 document.addEventListener("open-auth-modal", (event) => {
