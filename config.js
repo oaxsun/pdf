@@ -7,6 +7,6 @@ export const APP_CONFIG = {
   CANCEL_SUBSCRIPTION_FUNCTION_URL: "https://hgteuswezxhxtjhwwnkg.supabase.co/functions/v1/cancel-subscription",
 
   // Stripe Price IDs - Compresso Pro
-  STRIPE_MONTHLY_PRICE_ID: "price_1TUwUZK5nFoesXlkApbFtwEF",
-  STRIPE_YEARLY_PRICE_ID: "price_1TUwVYK5nFoesXlkLOslgwDx"
+  STRIPE_MONTHLY_PRICE_ID: "price_1TYHQ4GYGphiq2I7zJ15W5iX",
+  STRIPE_YEARLY_PRICE_ID: "price_1TYHRDGYGphiq2I7R3XZjD6B"
 };
