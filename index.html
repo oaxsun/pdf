@@ -218,6 +218,15 @@
             Compresso Pro está diseñado para ti.
           </p>
 
+          <div id="proStatusPanel" class="pro-status-panel hidden">
+            <div>
+              <div class="panel-mini-label">Tu estado</div>
+              <strong>Ya eres PRO</strong>
+              <p>Tu cuenta tiene compresión ilimitada y controles avanzados desbloqueados.</p>
+            </div>
+            <button id="proManageAccountBtn" class="btn btn-gold" type="button">Gestionar cuenta</button>
+          </div>
+
           <div class="pro-grid">
             <div class="pro-card">
               <h3>Control avanzado</h3>
@@ -498,7 +507,108 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="limitModal">
+  
+  <!-- CHECKOUT RESULT MODAL -->
+  <div id="checkoutResultModal" class="modal-backdrop hidden">
+    <div class="modal checkout-result-modal">
+      <div class="modal-badge" id="checkoutResultBadge">Pago</div>
+      <h3 id="checkoutResultTitle">Procesando pago</h3>
+      <p id="checkoutResultText">Estamos verificando tu suscripción.</p>
+      <div class="modal-actions">
+        <button id="checkoutResultCloseBtn" class="btn btn-primary" type="button">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GESTIONAR SUSCRIPCIÓN -->
+  <div id="subscriptionManageModal" class="modal-backdrop hidden">
+    <div class="modal subscription-modal">
+      <button id="closeSubscriptionManageModal" class="modal-x" type="button" aria-label="Cerrar gestión de suscripción">×</button>
+      <div class="modal-badge">Compresso PRO</div>
+      <h3>Gestionar suscripción</h3>
+      <p class="subscription-lead">Consulta el estado de tu plan, renovación e historial de pagos.</p>
+
+      <div class="subscription-summary-grid">
+        <div class="subscription-summary-card">
+          <span>Plan actual</span>
+          <strong id="subscriptionPlanName">PRO</strong>
+        </div>
+        <div class="subscription-summary-card">
+          <span>Estado</span>
+          <strong id="subscriptionStatus">Activo</strong>
+        </div>
+        <div class="subscription-summary-card">
+          <span>Inicio del periodo</span>
+          <strong id="subscriptionStartDate">-</strong>
+        </div>
+        <div class="subscription-summary-card">
+          <span>Renovación</span>
+          <strong id="subscriptionRenewDate">-</strong>
+        </div>
+      </div>
+
+      <div class="payment-history-box">
+        <div class="panel-mini-label">Historial de pagos</div>
+        <div id="paymentHistoryList" class="payment-history-list">
+          <div class="payment-history-item">
+            <span>Última suscripción activa</span>
+            <strong id="subscriptionPriceLabel">-</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions subscription-actions">
+        <button id="cancelSubscriptionBtn" class="btn btn-danger-soft" type="button">Cancelar suscripción</button>
+        <button id="closeSubscriptionManageBtn" class="btn btn-primary" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMAR CANCELACIÓN -->
+  <div id="cancelSubscriptionConfirmModal" class="modal-backdrop hidden">
+    <div class="modal subscription-modal">
+      <div class="modal-badge danger">Cancelar PRO</div>
+      <h3>¿Seguro que quieres cancelar?</h3>
+      <p>Si cancelas, al finalizar tu periodo perderás:</p>
+      <div class="cancel-loss-list">
+        <div>Compresión sin límite de tamaño</div>
+        <div>Controles avanzados de calidad y resolución</div>
+        <div>Acceso a funciones Pro futuras</div>
+      </div>
+      <div class="modal-actions subscription-actions">
+        <button id="keepSubscriptionBtn" class="btn btn-primary" type="button">Conservar PRO</button>
+        <button id="continueCancelSubscriptionBtn" class="btn btn-danger-soft" type="button">Continuar cancelación</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMAR IDENTIDAD PARA CANCELAR -->
+  <div id="cancelSubscriptionPasswordModal" class="modal-backdrop hidden">
+    <div class="modal subscription-modal">
+      <div class="modal-badge danger">Confirmar identidad</div>
+      <h3>Ingresa tu contraseña</h3>
+      <p>Por seguridad, confirma tu contraseña para cancelar la suscripción.</p>
+
+      <div class="password-field subscription-password-field">
+        <input id="cancelSubscriptionPassword" class="select compact-input" type="password" placeholder="Contraseña de tu cuenta" />
+        <button class="password-field-toggle" type="button" data-target="cancelSubscriptionPassword" aria-label="Mostrar contraseña">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="cancelSubscriptionMessage" class="message auth-message"></div>
+
+      <div class="modal-actions subscription-actions">
+        <button id="backCancelSubscriptionBtn" class="btn modal-close" type="button">Regresar</button>
+        <button id="confirmCancelSubscriptionBtn" class="btn btn-danger-soft" type="button">Confirmar cancelación</button>
+      </div>
+    </div>
+  </div>
+
+<div class="modal-backdrop hidden" id="limitModal">
     <div class="modal">
       <div class="modal-badge">⭐ Límite de versión gratis</div>
       <h3 id="limitTitle">Tu archivo supera el límite actual</h3>

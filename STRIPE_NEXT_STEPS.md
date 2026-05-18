@@ -61,3 +61,10 @@ supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxx
 3. Paga en Stripe test.
 4. Al volver, debe aparecer popup de éxito.
 5. La página recarga y debe mostrar PRO.
+
+
+## Deploy cancel subscription function
+
+```powershell
+supabase functions deploy cancel-subscription
+```

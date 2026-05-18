@@ -62,16 +62,16 @@ function updatePlansModalByCurrentPlan() {
     }
   }
 
-  if (plansProBtn) {
-    if (plan === "pro") {
-      plansProBtn.disabled = true;
-      plansProBtn.textContent = "PRO activo";
-      plansProBtn.classList.add("btn-disabled-soft");
-    } else {
-      plansProBtn.disabled = false;
-      plansProBtn.classList.remove("btn-disabled-soft");
-      updateProBillingSwitch(selectedBillingPeriod);
-    }
+  const isPro = plan === "pro";
+
+  [plansGuestLoginBtn, plansFreeRegisterBtn, plansProBtn].forEach((btn) => {
+    btn?.classList.toggle("hidden", isPro);
+  });
+
+  if (!isPro && plansProBtn) {
+    plansProBtn.disabled = false;
+    plansProBtn.classList.remove("btn-disabled-soft");
+    updateProBillingSwitch(selectedBillingPeriod);
   }
 }
 

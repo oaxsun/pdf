@@ -4,6 +4,7 @@ export const APP_CONFIG = {
 
   CREATE_CHECKOUT_FUNCTION_URL: "https://hgteuswezxhxtjhwwnkg.supabase.co/functions/v1/create-checkout-session",
   SYNC_CHECKOUT_FUNCTION_URL: "https://hgteuswezxhxtjhwwnkg.supabase.co/functions/v1/sync-checkout-session",
+  CANCEL_SUBSCRIPTION_FUNCTION_URL: "https://hgteuswezxhxtjhwwnkg.supabase.co/functions/v1/cancel-subscription",
 
   // Stripe Price IDs - Compresso Pro
   STRIPE_MONTHLY_PRICE_ID: "price_1TUwUZK5nFoesXlkApbFtwEF",
