@@ -1,569 +1,112 @@
-const { jsPDF } = window.jspdf;
+import Stripe from "https://esm.sh/stripe@14.25.0?target=denonext";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
-import { startCheckout } from "./pricing.js";
-import { supabase } from "./supabaseClient.js";
-import { APP_CONFIG } from "./config.js";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
-const fileInput = document.getElementById("fileInput");
-const dropzone = document.getElementById("dropzone");
-const filePanel = document.getElementById("filePanel");
-const fileName = document.getElementById("fileName");
-const fileMeta = document.getElementById("fileMeta");
-const originalSize = document.getElementById("originalSize");
-const finalSize = document.getElementById("finalSize");
-const savedPercent = document.getElementById("savedPercent");
-const compressBtn = document.getElementById("compressBtn");
-const clearBtn = document.getElementById("clearBtn");
-const downloadBtn = document.getElementById("downloadBtn");
-const message = document.getElementById("message");
-const progressWrap = document.getElementById("progressWrap");
-const progressBar = document.getElementById("progressBar");
-const progressText = document.getElementById("progressText");
-
-const checkoutResultModal = document.getElementById("checkoutResultModal");
-const checkoutResultBadge = document.getElementById("checkoutResultBadge");
-const checkoutResultTitle = document.getElementById("checkoutResultTitle");
-const checkoutResultText = document.getElementById("checkoutResultText");
-const checkoutResultCloseBtn = document.getElementById("checkoutResultCloseBtn");
-
-const preset = document.getElementById("preset");
-const presetWrap = document.getElementById("presetWrap");
-const scaleRange = document.getElementById("scaleRange");
-const qualityRange = document.getElementById("qualityRange");
-const scaleValue = document.getElementById("scaleValue");
-const qualityValue = document.getElementById("qualityValue");
-const scaleWrap = document.getElementById("scaleWrap");
-const qualityWrap = document.getElementById("qualityWrap");
-
-const presetAccordionBtn = document.getElementById("presetAccordionBtn");
-const presetAccordionContent = document.getElementById("presetAccordionContent");
-
-const track = document.getElementById("track");
-const tabLinks = document.querySelectorAll(".nav-link[data-tab]");
-const brandHome = document.getElementById("brandHome");
-
-const limitModal = document.getElementById("limitModal");
-const limitTitle = document.getElementById("limitTitle");
-const limitDescription = document.getElementById("limitDescription");
-const limitActions = document.getElementById("limitActions");
-
-const buyProBtn = document.getElementById("buyProBtn");
-const buyProBtnPage = document.getElementById("buyProBtnPage");
-
-let selectedFile = null;
-let outputUrl = null;
-let currentTab = 0;
-
-const pdfjsLib = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.mjs");
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs";
-
-function getUserPlan() {
-  return window.currentUserPlan || "guest";
-}
-
-function isProUser() {
-  return getUserPlan() === "pro";
-}
-
-function isFreeUser() {
-  return getUserPlan() === "free";
-}
-
-function isGuestUser() {
-  return getUserPlan() === "guest";
-}
-
-function getUploadLimit() {
-  if (isProUser()) return Infinity;
-  if (isFreeUser()) return 400 * 1024 * 1024;
-  return 200 * 1024 * 1024;
-}
-
-function setTab(index) {
-  currentTab = index;
-  track.style.transform = `translateX(-${index * 100}%)`;
-  tabLinks.forEach((link) => {
-    link.classList.toggle("active", Number(link.dataset.tab) === index);
-  });
-}
-
-
-document.addEventListener("navigate-tab", (event) => {
-  const tab = Number(event.detail?.tab ?? 0);
-  setTab(tab);
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
+  apiVersion: "2024-06-20",
 });
 
-function formatBytes(bytes) {
-  if (!bytes && bytes !== 0) return "-";
-  const units = ["B", "KB", "MB", "GB"];
-  let i = 0;
-  let value = bytes;
-  while (value >= 1024 && i < units.length - 1) {
-    value /= 1024;
-    i++;
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
-  return `${value.toFixed(value >= 10 || i === 0 ? 0 : 2)} ${units[i]}`;
-}
-
-function setMessage(text = "", type = "") {
-  message.className = `message ${type}`.trim();
-  message.textContent = text;
-}
-
-function showCheckoutResultModal({ badge = "Pago", title = "", text = "", mode = "success" }) {
-  if (!checkoutResultModal) {
-    alert(text || title);
-    return;
-  }
-
-  checkoutResultBadge.textContent = badge;
-  checkoutResultTitle.textContent = title;
-  checkoutResultText.textContent = text;
-  checkoutResultModal.classList.toggle("is-success", mode === "success");
-  checkoutResultModal.classList.toggle("is-error", mode === "error");
-  checkoutResultModal.classList.remove("hidden");
-}
-
-function closeCheckoutResultModal() {
-  checkoutResultModal?.classList.add("hidden");
-}
-
-function setProgress(percent, text) {
-  progressWrap.classList.remove("hidden");
-  progressBar.style.width = `${percent}%`;
-  progressText.textContent = text;
-}
-
-function resetProgress() {
-  progressWrap.classList.add("hidden");
-  progressBar.style.width = "0%";
-  progressText.textContent = "Preparando...";
-}
-
-function resetOutput() {
-  finalSize.textContent = "-";
-  savedPercent.textContent = "-";
-  downloadBtn.classList.add("hidden");
-  downloadBtn.removeAttribute("href");
-
-  if (outputUrl) {
-    URL.revokeObjectURL(outputUrl);
-    outputUrl = null;
-  }
-}
-
-function syncPresetControls(name) {
-  const presets = {
-    light:   { scale: 1.8, quality: 0.95 },
-    optimal: { scale: 1.5, quality: 0.90 },
-    extreme: { scale: 0.8, quality: 0.40 }
-  };
-
-  const p = presets[name];
-  scaleRange.value = p.scale;
-  qualityRange.value = p.quality;
-  updateRangeLabels();
-}
-
-function updateRangeLabels() {
-  scaleValue.textContent = `${Number(scaleRange.value).toFixed(1)}x`;
-  qualityValue.textContent = `${Math.round(Number(qualityRange.value) * 100)}%`;
-}
-
-function applyProLock() {
-  if (!isProUser()) {
-    preset.value = "optimal";
-    preset.disabled = true;
-    presetWrap.classList.add("select-lock");
-
-    scaleRange.value = 1.5;
-    qualityRange.value = 0.9;
-    scaleRange.disabled = true;
-    qualityRange.disabled = true;
-    scaleWrap.classList.add("locked");
-    qualityWrap.classList.add("locked");
-    updateRangeLabels();
-  } else {
-    preset.disabled = false;
-    presetWrap.classList.remove("select-lock");
-
-    scaleRange.disabled = false;
-    qualityRange.disabled = false;
-    scaleWrap.classList.remove("locked");
-    qualityWrap.classList.remove("locked");
-    updateRangeLabels();
-  }
-}
-
-function openLimitModal() {
-  limitActions.innerHTML = "";
-
-  if (isGuestUser()) {
-    limitTitle.textContent = "Tu archivo supera el límite para invitados";
-    limitDescription.innerHTML = `
-      Sin iniciar sesión puedes comprimir archivos de hasta <strong>200 MB</strong>.
-      Crea una cuenta gratis para aumentar tu límite a <strong>400 MB</strong>, o hazte Pro para comprimir <strong>sin límite de tamaño</strong>.
-    `;
-
-    limitActions.innerHTML = `
-      <button class="btn btn-primary" id="openRegisterFromLimit" type="button">Crear cuenta gratis</button>
-      <button class="btn btn-gold" id="goProFromLimit" type="button">Hazte PRO</button>
-      <button class="btn modal-close" id="closeLimitModalBtn" type="button">Continuar sin registrarme</button>
-    `;
-  } else if (isFreeUser()) {
-    limitTitle.textContent = "Tu archivo supera el límite de tu cuenta gratuita";
-    limitDescription.innerHTML = `
-      Tu cuenta gratuita permite comprimir archivos de hasta <strong>400 MB</strong>.
-      Actualiza a Pro para comprimir archivos más grandes y desbloquear funciones avanzadas.
-    `;
-
-    limitActions.innerHTML = `
-      <button class="btn btn-gold" id="goProFromLimit" type="button">Hazte PRO</button>
-      <button class="btn modal-close" id="closeLimitModalBtn" type="button">Continuar gratis</button>
-    `;
-  }
-
-  const closeBtn = () => limitModal.classList.add("hidden");
-
-  limitModal.classList.remove("hidden");
-
-  document.getElementById("closeLimitModalBtn")?.addEventListener("click", closeBtn);
-
-  document.getElementById("openRegisterFromLimit")?.addEventListener("click", () => {
-    closeBtn();
-    document.dispatchEvent(new CustomEvent("open-auth-modal", {
-      detail: { mode: "register" }
-    }));
-  });
-
-  document.getElementById("goProFromLimit")?.addEventListener("click", async () => {
-    closeBtn();
-    await startCheckout();
-  });
-}
-
-function triggerAutoDownload() {
-  if (!downloadBtn.href) return;
-  downloadBtn.click();
-}
-
-function setCompressingState(isLoading) {
-  if (isLoading) {
-    compressBtn.disabled = true;
-    compressBtn.textContent = "Comprimiendo...";
-  } else {
-    compressBtn.disabled = !selectedFile;
-    compressBtn.textContent = "Comprimir PDF";
-  }
-}
-
-function loadFile(file) {
-  if (!file) return;
-
-  if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-    setMessage("Selecciona un archivo PDF válido.", "error");
-    return;
-  }
-
-  const uploadLimit = getUploadLimit();
-  if (file.size > uploadLimit) {
-    selectedFile = null;
-    fileInput.value = "";
-    filePanel.style.display = "none";
-    originalSize.textContent = "-";
-    compressBtn.disabled = true;
-    resetOutput();
-    resetProgress();
-    setMessage("");
-    openLimitModal();
-    return;
-  }
-
-  selectedFile = file;
-  filePanel.style.display = "block";
-  fileName.textContent = file.name;
-  fileMeta.textContent = `Última modificación: ${new Date(file.lastModified).toLocaleString()}`;
-  originalSize.textContent = formatBytes(file.size);
-  compressBtn.disabled = false;
-  resetOutput();
-  resetProgress();
-  setMessage("Archivo listo para compresión.", "warn");
-}
-
-async function renderPageToJPEG(page, scale, quality) {
-  const viewport = page.getViewport({ scale });
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d", { alpha: false });
-
-  canvas.width = Math.max(1, Math.floor(viewport.width));
-  canvas.height = Math.max(1, Math.floor(viewport.height));
-
-  await page.render({ canvasContext: context, viewport }).promise;
-  const dataUrl = canvas.toDataURL("image/jpeg", quality);
-
-  return {
-    dataUrl,
-    widthPx: canvas.width,
-    heightPx: canvas.height
-  };
-}
-
-async function compressPdfAggressive(file, scale, quality) {
-  const buffer = await file.arrayBuffer();
-  const loadingTask = pdfjsLib.getDocument({ data: buffer, useWorkerFetch: true, isEvalSupported: false });
-  const pdf = await loadingTask.promise;
-
-  let doc;
-
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const progressBase = ((pageNum - 1) / pdf.numPages) * 100;
-    setProgress(Math.min(95, progressBase), `Procesando página ${pageNum} de ${pdf.numPages}...`);
-
-    const page = await pdf.getPage(pageNum);
-    const result = await renderPageToJPEG(
-      page,
-      isProUser() ? Number(scale) : 1.5,
-      isProUser() ? Number(quality) : 0.9
-    );
-
-    const mmPerPx = 25.4 / 96;
-    const pageWidthMm = result.widthPx * mmPerPx;
-    const pageHeightMm = result.heightPx * mmPerPx;
-
-    if (!doc) {
-      doc = new jsPDF({
-        orientation: pageWidthMm > pageHeightMm ? "landscape" : "portrait",
-        unit: "mm",
-        format: [pageWidthMm, pageHeightMm],
-        compress: true,
-        putOnlyUsedFonts: true
-      });
-    } else {
-      doc.addPage([pageWidthMm, pageHeightMm], pageWidthMm > pageHeightMm ? "landscape" : "portrait");
-    }
-
-    const currentPageIndex = doc.getNumberOfPages();
-    doc.setPage(currentPageIndex);
-    doc.addImage(result.dataUrl, "JPEG", 0, 0, pageWidthMm, pageHeightMm, undefined, "FAST");
-  }
-
-  setProgress(98, "Generando PDF final...");
-  const blob = doc.output("blob");
-  setProgress(100, "Compresión terminada.");
-  return blob;
-}
-
-tabLinks.forEach(link => {
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-    setTab(Number(link.dataset.tab));
-  });
-});
-
-brandHome?.addEventListener("click", (e) => {
-  e.preventDefault();
-  setTab(0);
-});
-
-presetAccordionBtn?.addEventListener("click", () => {
-  const willOpen = presetAccordionContent.classList.contains("hidden");
-  presetAccordionContent.classList.toggle("hidden", !willOpen);
-  presetAccordionBtn.setAttribute("aria-expanded", String(willOpen));
-});
-
-dropzone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropzone.classList.add("dragover");
-});
-
-dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
-
-dropzone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropzone.classList.remove("dragover");
-  loadFile(e.dataTransfer.files?.[0]);
-});
-
-fileInput.addEventListener("change", (e) => loadFile(e.target.files?.[0]));
-
-preset.addEventListener("change", () => syncPresetControls(preset.value));
-scaleRange.addEventListener("input", updateRangeLabels);
-qualityRange.addEventListener("input", updateRangeLabels);
-
-clearBtn?.addEventListener("click", () => {
-  selectedFile = null;
-  fileInput.value = "";
-  filePanel.style.display = "none";
-  originalSize.textContent = "-";
-  compressBtn.disabled = true;
-  resetOutput();
-  resetProgress();
-  setMessage("");
-  setCompressingState(false);
-});
-
-limitModal?.addEventListener("click", (e) => {
-  if (e.target === limitModal) {
-    limitModal.classList.add("hidden");
-  }
-});
-
-compressBtn.addEventListener("click", async () => {
-  if (!selectedFile) return;
-
-  resetOutput();
-  setMessage("Procesando PDF...", "warn");
-  setCompressingState(true);
 
   try {
-    const compressedBlob = await compressPdfAggressive(selectedFile, scaleRange.value, qualityRange.value);
+    const authHeader = req.headers.get("Authorization");
 
-    outputUrl = URL.createObjectURL(compressedBlob);
-
-    const baseName = selectedFile.name.replace(/\.pdf$/i, "");
-    const newName = `${baseName}_compressed.pdf`;
-
-    downloadBtn.href = outputUrl;
-    downloadBtn.download = newName;
-    downloadBtn.classList.remove("hidden");
-
-    finalSize.textContent = formatBytes(compressedBlob.size);
-
-    const reduction = selectedFile.size > 0
-      ? ((selectedFile.size - compressedBlob.size) / selectedFile.size) * 100
-      : 0;
-
-    savedPercent.textContent = `${Math.max(0, reduction).toFixed(1)}%`;
-
-    if (compressedBlob.size < selectedFile.size) {
-      setMessage("PDF comprimido correctamente. La descarga comenzó automáticamente.", "success");
-    } else {
-      setMessage("Este PDF ya está optimizado o no se pudo reducir más con este método.", "warn");
+    if (!authHeader) {
+      throw new Error("No hay sesión activa.");
     }
 
-    triggerAutoDownload();
-  } catch (err) {
-    console.error(err);
-    setMessage("No se pudo procesar el PDF. Prueba con otro archivo o con un PDF no protegido.", "error");
-  } finally {
-    setCompressingState(false);
-  }
-});
-
-buyProBtn?.addEventListener("click", startCheckout);
-buyProBtnPage?.addEventListener("click", startCheckout);
-
-document.addEventListener("plan-updated", () => {
-  applyProLock();
-
-  if (selectedFile && selectedFile.size > getUploadLimit()) {
-    selectedFile = null;
-    fileInput.value = "";
-    filePanel.style.display = "none";
-    originalSize.textContent = "-";
-    compressBtn.disabled = true;
-    resetOutput();
-    resetProgress();
-    setMessage("");
-  }
-});
-
-syncPresetControls("optimal");
-updateRangeLabels();
-applyProLock();
-setTab(0);
-
-
-// Stripe Checkout Result Handler
-async function syncStripeCheckoutSession(sessionId) {
-  if (!APP_CONFIG.SYNC_CHECKOUT_FUNCTION_URL) {
-    throw new Error("Falta configurar SYNC_CHECKOUT_FUNCTION_URL en config.js.");
-  }
-
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.access_token) {
-    throw new Error("Inicia sesión para activar tu cuenta PRO.");
-  }
-
-  const response = await fetch(APP_CONFIG.SYNC_CHECKOUT_FUNCTION_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${session.access_token}`
-    },
-    body: JSON.stringify({
-      session_id: sessionId
-    })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || "No se pudo activar tu cuenta PRO.");
-  }
-
-  return data;
-}
-
-checkoutResultCloseBtn?.addEventListener("click", closeCheckoutResultModal);
-checkoutResultModal?.addEventListener("click", (event) => {
-  if (event.target === checkoutResultModal) closeCheckoutResultModal();
-});
-
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  const checkoutStatus = params.get("checkout");
-  const sessionId = params.get("session_id");
-
-  if (checkoutStatus === "success") {
-    showCheckoutResultModal({
-      badge: "Pago aprobado",
-      title: "Estamos activando tu cuenta PRO",
-      text: "Tu pago fue procesado correctamente. Estamos sincronizando tu suscripción.",
-      mode: "success"
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader,
+        },
+      },
     });
 
-    if (sessionId) {
-      syncStripeCheckoutSession(sessionId)
-        .then(() => {
-          document.dispatchEvent(new CustomEvent("refresh-account-state"));
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-          setTimeout(() => {
-            showCheckoutResultModal({
-              badge: "PRO activo",
-              title: "Tu cuenta PRO ya está activa",
-              text: "Ya puedes comprimir sin límite y usar controles avanzados.",
-              mode: "success"
-            });
-            document.dispatchEvent(new CustomEvent("refresh-account-state"));
-          }, 1000);
-        })
-        .catch((error) => {
-          console.error(error);
-          showCheckoutResultModal({
-            badge: "Pago aprobado",
-            title: "Tu pago fue aprobado",
-            text: `No pudimos actualizar tu cuenta automáticamente: ${error.message}. Recarga la página o revisa la sincronización.`,
-            mode: "error"
-          });
-        });
-    } else {
-      setTimeout(() => {
-        document.dispatchEvent(new CustomEvent("refresh-account-state"));
-      }, 2500);
+    if (userError || !user) {
+      throw new Error("No se pudo validar la sesión.");
     }
 
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
+    const body = await req.json();
 
-  if (checkoutStatus === "cancel") {
-    showCheckoutResultModal({
-      badge: "Pago cancelado",
-      title: "No se realizó ningún cargo",
-      text: "Puedes volver a elegir un plan cuando quieras.",
-      mode: "error"
+    const priceId = body.price_id || body.priceId;
+    const billingPeriod = body.billing_period || body.billingPeriod || "monthly";
+
+    if (!priceId) {
+      throw new Error("Missing Stripe Price ID.");
+    }
+
+    const origin = req.headers.get("origin") || "https://compresso.oaxsun.tech";
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "subscription",
+
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+
+      customer_email: user.email || undefined,
+      client_reference_id: user.id,
+
+      success_url: body.success_url || `${origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: body.cancel_url || `${origin}/?checkout=cancel`,
+
+      metadata: {
+        app: "compresso",
+        user_id: user.id,
+        user_email: user.email || "",
+        billing_period: billingPeriod,
+      },
+
+      subscription_data: {
+        metadata: {
+          app: "compresso",
+          user_id: user.id,
+          user_email: user.email || "",
+          billing_period: billingPeriod,
+        },
+      },
     });
-    window.history.replaceState({}, document.title, window.location.pathname);
+
+    return new Response(JSON.stringify({ url: session.url }), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: error.message || "No se pudo crear la sesión de Stripe.",
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
-})();
+});

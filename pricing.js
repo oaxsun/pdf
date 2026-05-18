@@ -183,9 +183,18 @@ export async function startCheckout() {
   openPlansModal();
 }
 
-document.getElementById("buyProBtn")?.addEventListener("click", startCheckout);
-document.getElementById("buyProBtnPage")?.addEventListener("click", startCheckout);
-document.getElementById("accountUpgradeBtn")?.addEventListener("click", startCheckout);
+function handleMainProButtonClick() {
+  if ((window.currentUserPlan || "guest") === "pro") {
+    document.dispatchEvent(new CustomEvent("open-account-management"));
+    return;
+  }
+
+  startCheckout();
+}
+
+document.getElementById("buyProBtn")?.addEventListener("click", handleMainProButtonClick);
+document.getElementById("buyProBtnPage")?.addEventListener("click", handleMainProButtonClick);
+document.getElementById("accountUpgradeBtn")?.addEventListener("click", handleMainProButtonClick);
 
 document.addEventListener("open-plans-modal", startCheckout);
 document.addEventListener("plan-updated", updatePlansModalByCurrentPlan);
